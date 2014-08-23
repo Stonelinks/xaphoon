@@ -5,10 +5,8 @@ var bodyParser = require('body-parser');
 
 var app = express();
 
-
 var http = require('http');
 var server = http.createServer(app);
-
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -19,44 +17,41 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(express.static(path.join(__dirname, 'public')));
 
-
 var router = express.Router();
-/* GET home page. */
 router.get('/', function(req, res) {
   res.render('index');
 });
-
 app.use('/', router);
 
-/// catch 404 and forward to error handler
+// catch 404 and forward to error handler
 app.use(function(req, res, next) {
-    var err = new Error('Not Found');
-    err.status = 404;
-    next(err);
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
 });
 
-/// error handlers
+// error handlers
 
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
-    app.use(function(err, req, res, next) {
-        res.status(err.status || 500);
-        res.render('error', {
-            message: err.message,
-            error: err
-        });
+  app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('error', {
+      message: err.message,
+      error: err
     });
+  });
 }
 
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
-        error: {}
-    });
+  res.status(err.status || 500);
+  res.render('error', {
+    message: err.message,
+    error: {}
+  });
 });
 
 app.set('port', process.env.PORT || 1228);
@@ -72,7 +67,7 @@ var Seed = require('seed');
 
 var xaphoon = {};
 
-xaphoon.Todo = Seed.Model.extend('todo', {
+xaphoon.Todo = Seed.Model.extend('drawable', {
   schema: new Seed.Schema({
     title: String,
     completed: Boolean
@@ -85,8 +80,8 @@ xaphoon.Todos = Seed.Graph.extend({
   }
 });
 
-var db = new xaphoon.Todos()
-  , guid = new Seed.ObjectId();
+var db = new xaphoon.Todos();
+var guid = new Seed.ObjectId();
 
 // Socket.io
 
@@ -112,73 +107,73 @@ var io = require('socket.io').listen(server);
 io.sockets.on('connection', function(socket) {
 
   /**
-   * todo:create
+   * drawable:create
    *
-   * called when we .save() our new todo
+   * called when we .save() our new drawable
    *
    * we listen on model namespace, but emit
    * on the collection namespace
    */
 
-  socket.on('todo:create', function(data, callback) {
-    var id = guid.gen()
-      , todo = db.set('/todo/' + id, data)
-      , json = todo._attributes;
+  socket.on('drawable:create', function(data, callback) {
+    var id = guid.gen();
+    var drawable = db.set('/drawable/' + id, data);
+    var json = drawable._attributes;
 
-    socket.emit('todos:create', json);
-    socket.broadcast.emit('todos:create', json);
+    socket.emit('drawable:create', json);
+    socket.broadcast.emit('drawable:create', json);
     callback(null, json);
   });
 
   /**
-   * todos:read
+   * drawable:read
    *
    * called when we .fetch() our collection
    * in the client-side router
    */
 
-  socket.on('todos:read', function(data, callback) {
+  socket.on('drawable:read', function(data, callback) {
     var list = [];
 
-    db.each('todo', function(todo) {
-      list.push(todo._attributes);
+    db.each('drawable', function(drawable) {
+      list.push(drawable._attributes);
     });
 
     callback(null, list);
   });
 
   /**
-   * todo:update
+   * drawable:update
    *
    * called when we .save() our model
    * after toggling its completed status
    */
 
-  socket.on('todo:update', function(data, callback) {
-    var todo = db.get('/todo/' + data.id);
-    todo.set(data);
+  socket.on('drawable:update', function(data, callback) {
+    var drawable = db.get('/drawable/' + data.id);
+    drawable.set(data);
 
-    var json = todo._attributes;
+    var json = drawable._attributes;
 
-    socket.emit('todo/' + data.id + ':update', json);
-    socket.broadcast.emit('todo/' + data.id + ':update', json);
+    socket.emit('drawable/' + data.id + ':update', json);
+    socket.broadcast.emit('drawable/' + data.id + ':update', json);
     callback(null, json);
   });
 
   /**
-   * todo:delete
+   * drawable:delete
    *
    * called when we .destroy() our model
    */
 
-  socket.on('todo:delete', function(data, callback) {
-    console.log(db.get('/todo/' + data.id));
-    var json = db.get('/todo/' + data.id)._attributes;
+  socket.on('drawable:delete', function(data, callback) {
+    console.log(db.get('/drawable/' + data.id));
+    var json = db.get('/drawable/' + data.id)._attributes;
 
-    db.del('/todo/' + data.id);
+    db.del('/drawable/' + data.id);
 
-    socket.emit('todo/' + data.id + ':delete', json);
-    socket.broadcast.emit('todo/' + data.id + ':delete', json);
+    socket.emit('drawable/' + data.id + ':delete', json);
+    socket.broadcast.emit('drawable/' + data.id + ':delete', json);
     callback(null, json);
   });
 
