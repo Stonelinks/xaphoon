@@ -1,34 +1,67 @@
+var express = require('express');
+var path = require('path');
+var logger = require('morgan');
+var bodyParser = require('body-parser');
 
-/**
- * Module dependencies.
- */
+var routes = require('./routes/index');
 
-var express = require('express')
-  , stylus = require('stylus')
-  , routes = require('./routes')
-  , path = require('path')
-  , Seed = require('seed');
+var app = express();
 
-var app = module.exports = express.createServer();
 
-// Configuration
+var app = express()
+var http = require('http')
+var server = http.createServer(app)
 
-app.configure(function(){
-  app.set('views', __dirname + '/views');
-  app.set('view engine', 'jade');
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(app.router);
-  app.use(express.static(__dirname + '/public'));
+
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
+
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded());
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use('/', routes);
+
+/// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+    var err = new Error('Not Found');
+    err.status = 404;
+    next(err);
 });
 
-app.configure('development', function(){
-  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+/// error handlers
+
+// development error handler
+// will print stacktrace
+if (app.get('env') === 'development') {
+    app.use(function(err, req, res, next) {
+        res.status(err.status || 500);
+        res.render('error', {
+            message: err.message,
+            error: err
+        });
+    });
+}
+
+// production error handler
+// no stacktraces leaked to user
+app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('error', {
+        message: err.message,
+        error: {}
+    });
 });
 
-app.configure('production', function(){
-  app.use(express.errorHandler());
+app.set('port', process.env.PORT || 1228);
+
+server.listen(app.get('port'), function() {
+  console.log('Express server listening on port ' + server.address().port);
 });
+
+var Seed = require('seed');
 
 // Our psuedo database, on Seed.
 // https://github.com/logicalparadox/seed
@@ -53,7 +86,7 @@ var db = new Minimal.Todos()
 
 // Socket.io
 
-var io = require('socket.io').listen(app);
+var io = require('socket.io').listen(server);
 
 /**
  * our socket transport events
@@ -146,13 +179,3 @@ io.sockets.on('connection', function (socket) {
   });
 
 });
-
-// Routes
-
-app.get('/', routes.index);
-app.get('/templates.js', routes.templatejs);
-
-if (!module.parent) {
-  app.listen(1228);
-  console.log("Backbone.ioBind Example App listening on port %d in %s mode", app.address().port, app.settings.env);
-}

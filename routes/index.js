@@ -1,15 +1,15 @@
+var express = require('express');
+var router = express.Router();
 
 var path = require('path')
   , folio = require('folio')
   , jade = require('jade');
 
-/*
- * GET home page.
- */
 
-exports.index = function(req, res){
+/* GET home page. */
+router.get('/', function(req, res) {
   res.render('index', { title: 'Done.', layout: false });
-};
+});
 
 
 /**
@@ -28,7 +28,7 @@ var templateJs = new folio.Glossary([
   compilers: {
     jade: function (name, source) {
       return 'template[\'' + name + '\'] = ' +
-        jade.compile(source, {
+        jade.compileClient(source, {
           client: true,
           compileDebug: false
         }) + ';';
@@ -36,6 +36,6 @@ var templateJs = new folio.Glossary([
   }
 });
 
-// serve using express
-exports.templatejs = folio.serve(templateJs);
+router.get('/templates.js', folio.serve(templateJs))
 
+module.exports = router;
