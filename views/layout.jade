@@ -1,7 +1,11 @@
-doctype html
-html
-  head
-    title= title
-    link(rel='stylesheet', href='/stylesheets/style.css')
-  body
-    block content
+extends base
+
+block body
+  block nav
+    .landing
+      a.brand(href='/') Xaphoon
+      .tagline-bar Backbone + THREE.js experiment by 
+        a(href="http://stonelinks.github.io/", target="_blank") Lucas Doyle
+
+  .container
+    h1 nothing here yet

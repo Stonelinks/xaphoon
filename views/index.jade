@@ -1,7 +1,11 @@
-extends extend-layout
+extends layout
 
-block header
-  h1= title
-
-block content
-  #TodoWrapper
+block append js
+  script(src='/socket.io/socket.io.js')
+  script(src='/vendor/jquery/dist/jquery.min.js')
+  script(src='/vendor/underscore/underscore.js')
+  script(src='/vendor/underscore/underscore.js')
+  script(src='/vendor/backbone/backbone.js')
+  script(src='/vendor/backbone.iobind/dist/backbone.iosync.js')
+  script(src='/vendor/backbone.iobind/dist/backbone.iobind.js')
+  script(src='/js/main.js')

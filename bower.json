@@ -18,6 +18,8 @@
     "backbone": "~1.1.2",
     "backbone.iobind": "~0.4.7",
     "bootstrap": "~3.2.0",
-    "threejs": "r68"
+    "threejs": "r68",
+    "html5shiv": "~3.7.2",
+    "respond": "~1.4.2"
   }
 }

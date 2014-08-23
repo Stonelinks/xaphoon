@@ -3,14 +3,11 @@ var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 
-var routes = require('./routes/index');
-
 var app = express();
 
 
-var app = express()
-var http = require('http')
-var server = http.createServer(app)
+var http = require('http');
+var server = http.createServer(app);
 
 
 // view engine setup
@@ -22,7 +19,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
+
+var router = express.Router();
+/* GET home page. */
+router.get('/', function(req, res) {
+  res.render('index');
+});
+
+app.use('/', router);
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -66,22 +70,22 @@ var Seed = require('seed');
 // Our psuedo database, on Seed.
 // https://github.com/logicalparadox/seed
 
-var Minimal = {};
+var xaphoon = {};
 
-Minimal.Todo = Seed.Model.extend('todo', {
+xaphoon.Todo = Seed.Model.extend('todo', {
   schema: new Seed.Schema({
     title: String,
     completed: Boolean
   })
 });
 
-Minimal.Todos = Seed.Graph.extend({
-  initialize: function () {
-    this.define(Minimal.Todo);
+xaphoon.Todos = Seed.Graph.extend({
+  initialize: function() {
+    this.define(xaphoon.Todo);
   }
 });
 
-var db = new Minimal.Todos()
+var db = new xaphoon.Todos()
   , guid = new Seed.ObjectId();
 
 // Socket.io
@@ -105,7 +109,7 @@ var io = require('socket.io').listen(server);
  * and collection ioBinds will pick up these events
  */
 
-io.sockets.on('connection', function (socket) {
+io.sockets.on('connection', function(socket) {
 
   /**
    * todo:create
@@ -116,7 +120,7 @@ io.sockets.on('connection', function (socket) {
    * on the collection namespace
    */
 
-  socket.on('todo:create', function (data, callback) {
+  socket.on('todo:create', function(data, callback) {
     var id = guid.gen()
       , todo = db.set('/todo/' + id, data)
       , json = todo._attributes;
@@ -133,10 +137,10 @@ io.sockets.on('connection', function (socket) {
    * in the client-side router
    */
 
-  socket.on('todos:read', function (data, callback) {
+  socket.on('todos:read', function(data, callback) {
     var list = [];
 
-    db.each('todo', function (todo) {
+    db.each('todo', function(todo) {
       list.push(todo._attributes);
     });
 
@@ -150,7 +154,7 @@ io.sockets.on('connection', function (socket) {
    * after toggling its completed status
    */
 
-  socket.on('todo:update', function (data, callback) {
+  socket.on('todo:update', function(data, callback) {
     var todo = db.get('/todo/' + data.id);
     todo.set(data);
 
@@ -167,8 +171,8 @@ io.sockets.on('connection', function (socket) {
    * called when we .destroy() our model
    */
 
-  socket.on('todo:delete', function (data, callback) {
-    console.log(db.get('/todo/' + data.id))
+  socket.on('todo:delete', function(data, callback) {
+    console.log(db.get('/todo/' + data.id));
     var json = db.get('/todo/' + data.id)._attributes;
 
     db.del('/todo/' + data.id);
