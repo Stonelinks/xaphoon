@@ -13,26 +13,12 @@ var app = module.exports = express.createServer();
 
 // Configuration
 
-var stylus_compile = function (str, path) {
-  return stylus(str)
-          .set('filename', path)
-          .set('compress', true)
-          .include(require('nib').path)
-          .include(require('fez').path);
-};
-
 app.configure(function(){
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(app.router);
-  app.use(stylus.middleware({
-    src: path.join(__dirname, 'styles'),
-    dest: path.join(__dirname, 'public'),
-    compile: stylus_compile,
-    force: true // this forces the css to be regenerated on every pageview
-  }));
   app.use(express.static(__dirname + '/public'));
 });
 
@@ -164,8 +150,7 @@ io.sockets.on('connection', function (socket) {
 // Routes
 
 app.get('/', routes.index);
-app.get('/js/templates.js', routes.templatejs);
-app.get('/js/vendor.js', routes.vendorjs);
+app.get('/templates.js', routes.templatejs);
 
 if (!module.parent) {
   app.listen(1228);

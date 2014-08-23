@@ -13,27 +13,6 @@ exports.index = function(req, res){
 
 
 /**
- * Vendor Javascript Package
- *
- * jquery
- * underscore
- * backbone
- * backbone.iosync
- * backbone.iobind
- */
-
-var vendorJs = new folio.Glossary([
-  path.join(__dirname, '..', 'public', 'js', 'jquery.min.js'),
-  require.resolve('underscore/underscore.js'),
-  require.resolve('backbone/backbone.js'),
-  path.join(__dirname, '..', '..', 'dist', 'backbone.iobind', 'dist', 'backbone.iosync.js'),
-  path.join(__dirname, '..', '..', 'dist', 'backbone.iobind', 'dist', 'backbone.iobind.js')
-]);
-
-// serve using express
-exports.vendorjs = folio.serve(vendorJs);
-
-/**
  * Template Javascript Package
  *
  * We are going to use pre-compiled
