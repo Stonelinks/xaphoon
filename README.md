@@ -1,4 +1,4 @@
-xaphoon
+Xaphoon
 =======
 
 Backbone + THREE.js experiments
