@@ -14,6 +14,9 @@ block append body
               a#menu-toggle(href='#menu-toggle') Toggle Feed
 
 block append js
+
+  //
+    dependencies
   script(src='/socket.io/socket.io.js')
   script(src='/vendor/jquery/dist/jquery.min.js')
   script(src='/vendor/underscore/underscore.js')
@@ -21,10 +24,20 @@ block append js
   script(src='/vendor/marionette/lib/backbone.marionette.min.js')
   script(src='/vendor/backbone.iobind/dist/backbone.iosync.min.js')
   script(src='/vendor/backbone.iobind/dist/backbone.iobind.min.js')
+
+  //
+    the app  
+  script(src='/js/app.js')
+  script(src='/js/models/realtimeModel.js')
+  script(src='/js/models/drawables.js')
+  script(src='/js/views/feed.js')
+  script(src='/js/router.js')
+  if env == 'development'
+    script(src='/js/debug.js')
   script(src='/js/main.js')
+  
   script(type='text/javascript')
     if env == 'development'
-      | !{dev}
       | document.write('<script src="http://'
       | + (location.host || 'localhost').split(':')[0]
       | + ':35729/livereload.js?snipver=1" type="text/javascript"><\/script>')
