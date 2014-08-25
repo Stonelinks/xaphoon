@@ -1,11 +1,17 @@
 extends layout
 
 block append body
-  .container
-    .row
-      .col-xs-8#canvas
-        h1 here be canvas
-      .col-xs-4#feed
+
+  #wrapper
+    #sidebar-wrapper
+      #feed
+
+    #page-content-wrapper
+      nav.navbar.navbar-default(role='navigation')
+        .container-fluid
+          ul.nav.navbar-nav
+            li.active
+              a#menu-toggle(href='#menu-toggle') Toggle Feed
 
 block append js
   script(src='/socket.io/socket.io.js')
@@ -13,29 +19,26 @@ block append js
   script(src='/vendor/underscore/underscore.js')
   script(src='/vendor/backbone/backbone.js')
   script(src='/vendor/marionette/lib/backbone.marionette.min.js')
-  script(src='/vendor/backbone.iobind/dist/backbone.iosync.js')
-  script(src='/vendor/backbone.iobind/dist/backbone.iobind.js')
+  script(src='/vendor/backbone.iobind/dist/backbone.iosync.min.js')
+  script(src='/vendor/backbone.iobind/dist/backbone.iobind.min.js')
   script(src='/js/main.js')
-  if env == 'development'
-    script(type='text/javascript')
+  script(type='text/javascript')
+    if env == 'development'
       | !{dev}
       | document.write('<script src="http://'
       | + (location.host || 'localhost').split(':')[0]
       | + ':35729/livereload.js?snipver=1" type="text/javascript"><\/script>')
+  script(type='text/javascript')
+    | $("#menu-toggle").click(function(e) {
+    |   e.preventDefault();
+    |   $("#wrapper").toggleClass("toggled");
+    | });
 
 block append body
 
   script#feed-template(type='text/html')
-    .panel.panel-primary
-      .panel-body
-        .input-group
-          span.input-group-btn
-            button#btn-chat.btn.btn-link.btn-sm
-              strong(style='color: green;')
-                | >>
-          input#chat-input.form-control.input-sm(type='text', placeholder='Type your message here...')
-      .panel-footer
-        pre.feed
+    input#chat-input.form-control.input-sm(type='text', placeholder='Type your message here...')
+    pre.feed
 
   script#feed-item-template(type='text/html')
     | <% if (mode == 'tx') { %>

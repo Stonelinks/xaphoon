@@ -60,8 +60,7 @@ var feedView = Marionette.ItemView.extend({
 
 var router = Backbone.Router.extend({
   routes: {
-    '': 'index',
-    '/': 'index'
+    '*catchall': 'index'
   },
 
   index: function() {

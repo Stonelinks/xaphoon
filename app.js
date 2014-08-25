@@ -22,7 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 var router = express.Router();
 
 // supremely ghetto
-var os = require('os')
+var os = require('os');
 app.set('env', os.hostname() == 'void71892' ? 'development' : 'production');
 
 router.get('/', function(req, res) {
