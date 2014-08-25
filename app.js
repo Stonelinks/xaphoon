@@ -89,91 +89,10 @@ var guid = new Seed.ObjectId();
 
 var io = require('socket.io').listen(server);
 
-/**
- * our socket transport events
- *
- * You will notice that when we emit the changes
- * in `create`, `update`, and `delete` we both
- * socket.emit and socket.broadcast.emit
- *
- * socket.emit sends the changes to the browser session
- * that made the request. not required in some scenarios
- * where you are only using ioSync for Socket.io
- *
- * socket.broadcast.emit sends the changes to
- * all other browser sessions. this keeps all
- * of the pages in mirror. our client-side model
- * and collection ioBinds will pick up these events
- */
+var feed = require('./realtime/feed');
 
-var numUsers = 0;
-var usernames = {};
-
-var Backbone = require('backbone');
-
-var FeedItem = Backbone.Model.extend({});
-var Feed = Backbone.Collection.extend({
-  comparator: 'time',
-  model: FeedItem
-});
-var feed = new Feed();
-
-var User = Backbone.Model.extend({});
-var Users = Backbone.Collection.extend({
-  model: User,
-
-  status: function() {
-    return this.length + ' people are here';
-  }
-});
-
-var users = new Users();
 io.on('connection', function(socket) {
-
-  var user = new User({
-    socketID: socket.id
-  });
-  users.add(user);
-
-  var _broadcastFeedUpdate = function(data) {
-    socket.broadcast.emit('feed:update', {
-      socketID: socket.id,
-      message: data
-    });
-  };
-  _broadcastFeedUpdate(socket.id + ' joined');
-  _broadcastFeedUpdate(users.status());
-
-  socket.on('feed:init', function() {
-    socket.emit('feed:update', {
-      socketID: -1,
-      message: feed.pluck('message').concat([users.status()])
-    });
-  });
-
-  // when the client emits 'feed:new', this listens and executes
-  socket.on('feed:new', function(data) {
-    // we tell the client to execute 'new message'
-    var feedItem = new FeedItem({
-      time: (new Date()).getTime(),
-      from: socket.id,
-      message: data
-    });
-    feed.add(feedItem);
-    _broadcastFeedUpdate(data);
-  });
-
-  // when the user disconnects.. perform this
-  socket.on('disconnect', function() {
-    var user = users.findWhere({
-      socketID: socket.id
-    });
-    if (user !== undefined) {
-      users.remove(user);
-      _broadcastFeedUpdate(socket.id + ' left');
-      _broadcastFeedUpdate(users.status());
-    }
-  });
+  feed.attachSocketEvents(socket);
 
   /**
    * drawable:create
@@ -245,5 +164,4 @@ io.on('connection', function(socket) {
     socket.broadcast.emit('drawable/' + data.id + ':delete', json);
     callback(null, json);
   });
-
 });
