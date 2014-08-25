@@ -6279,6 +6279,9 @@ hr {
   position: absolute;
   margin-right: -250px;
 }
+.navbar {
+  margin: 0;
+}
 /* Sidebar Styles */
 .sidebar-nav {
   position: absolute;

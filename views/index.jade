@@ -7,11 +7,12 @@ block append body
       #feed
 
     #page-content-wrapper
-      nav.navbar.navbar-default(role='navigation')
+      nav.navbar.navbar-default
         .container-fluid
           ul.nav.navbar-nav
             li.active
               a#menu-toggle(href='#menu-toggle') Toggle Feed
+      #renderer-anchor
 
 block append js
 
@@ -24,6 +25,8 @@ block append js
   script(src='/vendor/marionette/lib/backbone.marionette.min.js')
   script(src='/vendor/backbone.iobind/dist/backbone.iosync.min.js')
   script(src='/vendor/backbone.iobind/dist/backbone.iobind.min.js')
+  script(src='/vendor/threejs/build/three.min.js')
+  script(src='http://threejs.org/examples/js/controls/TransformControls.js')
 
   //
     the app  
@@ -31,6 +34,7 @@ block append js
   script(src='/js/models/realtimeModel.js')
   script(src='/js/models/drawables.js')
   script(src='/js/views/feed.js')
+  script(src='/js/views/renderer.js')
   script(src='/js/router.js')
   if env == 'development'
     script(src='/js/debug.js')

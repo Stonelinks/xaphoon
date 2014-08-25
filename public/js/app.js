@@ -5,7 +5,6 @@ var xaphoon = new Backbone.Marionette.Application();
 xaphoon.addInitializer(function(options) {
   xaphoon.addRegions({
     feed: '#feed',
-    renderer: '#renderer'
+    renderer: '#renderer-anchor'
   });
 });
-

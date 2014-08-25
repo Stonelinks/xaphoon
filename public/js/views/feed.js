@@ -1,6 +1,16 @@
 var feedView = Marionette.ItemView.extend({
   template: '#feed-template',
 
+  logEvent: function(message, mode) {
+    mode = mode || 'rx'; // or tx
+    var t = _.template($('#feed-item-template').text());
+    this.$el.find('.feed').prepend(t({
+      mode: mode,
+      message: message
+    }));
+    console.log((mode == 'tx' ? '<< ' : '>> ') + message);
+  },
+
   events: {
     'keydown': 'keyAction'
   },
@@ -13,16 +23,6 @@ var feedView = Marionette.ItemView.extend({
       socket.emit('feed:new', message);
       this.logEvent(message, 'tx');
     }
-  },
-
-  logEvent: function(message, mode) {
-    mode = mode || 'rx'; // or tx
-    var t = _.template($('#feed-item-template').text());
-    this.$el.find('.feed').prepend(t({
-      mode: mode,
-      message: message
-    }));
-    console.log((mode == 'tx' ? '<< ' : '>> ') + message);
   },
 
   initialize: function(options) {
