@@ -7,11 +7,6 @@ block append body
       #feed
 
     #page-content-wrapper
-      nav.navbar.navbar-default
-        .container-fluid
-          ul.nav.navbar-nav
-            li.active
-              a#menu-toggle(href='#menu-toggle') Toggle Feed
       #renderer-anchor
 
 block append js
@@ -45,11 +40,6 @@ block append js
       | document.write('<script src="http://'
       | + (location.host || 'localhost').split(':')[0]
       | + ':35729/livereload.js?snipver=1" type="text/javascript"><\/script>')
-  script(type='text/javascript')
-    | $("#menu-toggle").click(function(e) {
-    |   e.preventDefault();
-    |   $("#wrapper").toggleClass("toggled");
-    | });
 
 block append body
 
@@ -69,4 +59,23 @@ block append body
     strong
       | <%= message + '\n' %>
     | <% } %>
-    
+
+  script#renderer-template(type='text/html')
+    nav.navbar.navbar-default
+      .container-fluid
+        ul.nav.navbar-nav
+          li
+            a#feed-toggle(href='#') Toggle Feed
+          li
+            a#translate-mode(href='#')
+              span.glyphicon.glyphicon-move
+              |  Move
+          li
+            a#rotate-mode(href='#')
+              span.glyphicon.glyphicon-refresh
+              |  Rotate
+          li
+            a#scale-mode(href='#')
+              span.glyphicon.glyphicon-resize-full
+              |  Scale
+    #canvas-anchor

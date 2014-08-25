@@ -1,13 +1,41 @@
+var canvasID = '#canvas-anchor';
+
 var ThreeJSRenderer = Marionette.ItemView.extend({
 
-  template: _.template('<div></div>'),
+  template: '#renderer-template',
+
+  events: {
+    'click #feed-toggle': function(e) {
+      e.preventDefault();
+      var _this = this;
+      setTimeout(function() {
+        _this.onWindowResize();
+      }, 1100);
+      $('#wrapper').toggleClass('toggled');
+    },
+
+    'click #translate-mode': function(e) {
+      e.preventDefault();
+      this.control.setMode('translate');
+    },
+
+    'click #rotate-mode': function(e) {
+      e.preventDefault();
+      this.control.setMode('rotate');
+    },
+
+    'click #scale-mode': function(e) {
+      e.preventDefault();
+      this.control.setMode('scale');
+    }
+  },
 
   getWidth: function() {
-    return window.innerWidth - $('#renderer-anchor').offset().left - 15;
+    return window.innerWidth - $(canvasID).offset().left - 15;
   },
 
   getHeight: function() {
-    return window.innerHeight - $('#renderer-anchor').offset().top - 15;
+    return window.innerHeight - $(canvasID).offset().top - 15;
   },
 
   camera: undefined,
@@ -18,95 +46,76 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
 
   control: undefined,
 
+  setupRenderer: function() {
+    this.renderer = new THREE.WebGLRenderer();
+    this.renderer.sortObjects = false;
+    this.renderer.setSize(this.getWidth(), this.getHeight());
+
+    this.$el.find(canvasID).append(this.renderer.domElement);
+  },
+
+  setupCamera: function() {
+    this.camera = new THREE.PerspectiveCamera(70, this.getWidth() / this.getHeight(), 1, 3000);
+    this.camera.position.set(1000, 500, 1000);
+    this.camera.lookAt(new THREE.Vector3(0, 200, 0));
+  },
+
+  setupScene: function() {
+    this.scene = new THREE.Scene();
+    this.scene.add(new THREE.GridHelper(500, 100));
+
+    var light = new THREE.DirectionalLight(0xffffff, 2);
+    light.position.set(1, 1, 1);
+    this.scene.add(light);
+
+    var _this = this;
+    var texture = THREE.ImageUtils.loadTexture('/img/crate.gif', new THREE.UVMapping(), function() {
+      _this._render();
+    });
+    texture.anisotropy = this.renderer.getMaxAnisotropy();
+
+    var geometry = new THREE.BoxGeometry(200, 200, 200);
+    var material = new THREE.MeshLambertMaterial({ map: texture });
+
+    this.control = new THREE.TransformControls(this.camera, this.renderer.domElement);
+
+    this.control.addEventListener('change', function() {
+      _this._render();
+    });
+
+    var mesh = new THREE.Mesh(geometry, material);
+    this.scene.add(mesh);
+
+    this.control.attach(mesh);
+    this.scene.add(this.control);
+  },
+
+  onWindowResize: function() {
+    this.camera.aspect = this.getWidth() / this.getHeight();
+    this.camera.updateProjectionMatrix();
+
+    this.renderer.setSize(this.getWidth(), this.getHeight());
+    this._render();
+  },
+
+  _render: function() {
+    this.control.update();
+    this.renderer.render(this.scene, this.camera);
+  },
+
   initialize: function(options) {
 
-    this.once('render', function() {
-
-      this.renderer = new THREE.WebGLRenderer();
-      this.renderer.sortObjects = false;
-      this.renderer.setSize(this.getWidth(), this.getHeight());
-
-      this.$el.append(this.renderer.domElement);
-
-      this.camera = new THREE.PerspectiveCamera(70, this.getWidth() / this.getHeight(), 1, 3000);
-      this.camera.position.set(1000, 500, 1000);
-      this.camera.lookAt(new THREE.Vector3(0, 200, 0));
-
-      this.scene = new THREE.Scene();
-      this.scene.add(new THREE.GridHelper(500, 100));
-
-      var light = new THREE.DirectionalLight(0xffffff, 2);
-      light.position.set(1, 1, 1);
-      this.scene.add(light);
-
-      var texture = THREE.ImageUtils.loadTexture('/img/crate.gif', new THREE.UVMapping(), render);
-      texture.anisotropy = this.renderer.getMaxAnisotropy();
-
-      var geometry = new THREE.BoxGeometry(200, 200, 200);
-      var material = new THREE.MeshLambertMaterial({ map: texture });
-
-      this.control = new THREE.TransformControls(this.camera, this.renderer.domElement);
-
-      this.control.addEventListener('change', render);
-
-      var mesh = new THREE.Mesh(geometry, material);
-      this.scene.add(mesh);
-
-      this.control.attach(mesh);
-      this.scene.add(this.control);
-
-      window.addEventListener('resize', onWindowResize, false);
-
+    this.once('show', function() {
+      this.setupRenderer();
+      this.setupCamera();
+      this.setupScene();
 
       var _this = this;
-      window.addEventListener('keydown', function(event ) {
-        //console.log(event.which);
-        switch (event.keyCode) {
-          case 81: // Q
-            _this.control.setSpace(control.space == 'local' ? 'world' : 'local');
-            break;
-          case 87: // W
-            _this.control.setMode('translate');
-            break;
-          case 69: // E
-            _this.control.setMode('rotate');
-            break;
-          case 82: // R
-            _this.control.setMode('scale');
-            break;
-          case 187:
-          case 107: // +,=,num+
-            _this.control.setSize(_this.control.size + 0.1);
-            break;
-          case 189:
-          case 10: // -,_,num-
-            _this.control.setSize(Math.max(_this.control.size - 0.1, 0.1));
-            break;
-        }
-      });
+      window.addEventListener('resize', function() {
+        _this.onWindowResize();
+      }, false);
 
-      function onWindowResize() {
-
-        _this.camera.aspect = _this.getWidth() / _this.getHeight();
-        _this.camera.updateProjectionMatrix();
-
-        _this.renderer.setSize(_this.getWidth(), _this.getHeight());
-
-        render();
-      }
-
-      $('#menu-toggle').click(function(e) {
-        setTimeout(onWindowResize, 1100);
-      });
-
-      function render() {
-
-        _this.control.update();
-
-        _this.renderer.render(_this.scene, _this.camera);
-
-      }
-      render();
+      _this._render();
     });
   }
 });
@@ -128,7 +137,7 @@ xaphoon.Renderer = Backbone.View.extend({
     this.todos.bind('add', this.addDrawable);
     this.todos.bind('add', this.removeDrawable);
 
-    this.render();
+    this._render();
   },
 
   render: function() {

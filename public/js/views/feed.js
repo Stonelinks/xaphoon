@@ -12,16 +12,14 @@ var feedView = Marionette.ItemView.extend({
   },
 
   events: {
-    'keydown': 'keyAction'
-  },
-
-  keyAction: function(e) {
-    var code = e.keyCode || e.which;
-    var message = this.$el.find('#chat-input').val();
-    if (code == 13 && message != '') {
-      this.$el.find('#chat-input').val('');
-      socket.emit('feed:new', message);
-      this.logEvent(message, 'tx');
+    'keydown': function(e) {
+      var code = e.keyCode || e.which;
+      var message = this.$el.find('#chat-input').val();
+      if (code == 13 && message != '') {
+        this.$el.find('#chat-input').val('');
+        socket.emit('feed:new', message);
+        this.logEvent(message, 'tx');
+      }
     }
   },
 
