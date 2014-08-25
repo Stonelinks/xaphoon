@@ -14,7 +14,9 @@ app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded());
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 var router = express.Router();
@@ -54,10 +56,10 @@ app.use(function(err, req, res, next) {
   });
 });
 
-app.set('port', process.env.PORT || 1228);
+app.set('port', process.env.PORT || 3000);
 
 server.listen(app.get('port'), function() {
-  console.log('Express server listening on port ' + server.address().port);
+  console.log('Express server listening on ' + server.address().port);
 });
 
 var Seed = require('seed');
@@ -67,20 +69,20 @@ var Seed = require('seed');
 
 var xaphoon = {};
 
-xaphoon.Todo = Seed.Model.extend('drawable', {
+xaphoon.Drawable = Seed.Model.extend('drawable', {
   schema: new Seed.Schema({
     title: String,
     completed: Boolean
   })
 });
 
-xaphoon.Todos = Seed.Graph.extend({
+xaphoon.Drawables = Seed.Graph.extend({
   initialize: function() {
-    this.define(xaphoon.Todo);
+    this.define(xaphoon.Drawable);
   }
 });
 
-var db = new xaphoon.Todos();
+var db = new xaphoon.Drawables();
 var guid = new Seed.ObjectId();
 
 // Socket.io
@@ -104,7 +106,74 @@ var io = require('socket.io').listen(server);
  * and collection ioBinds will pick up these events
  */
 
-io.sockets.on('connection', function(socket) {
+var numUsers = 0;
+var usernames = {};
+
+var Backbone = require('backbone');
+
+var FeedItem = Backbone.Model.extend({});
+var Feed = Backbone.Collection.extend({
+  comparator: 'time',
+  model: FeedItem
+});
+var feed = new Feed();
+
+var User = Backbone.Model.extend({});
+var Users = Backbone.Collection.extend({
+  model: User,
+
+  status: function() {
+    return this.length + ' people are here';
+  }
+});
+
+var users = new Users();
+io.on('connection', function(socket) {
+
+  var user = new User({
+    socketID: socket.id
+  });
+  users.add(user);
+
+  var _broadcastFeedUpdate = function(data) {
+    socket.broadcast.emit('feed:update', {
+      socketID: socket.id,
+      message: data
+    });
+  };
+  _broadcastFeedUpdate(socket.id + ' joined');
+  _broadcastFeedUpdate(users.status());
+
+  socket.on('feed:init', function() {
+    socket.emit('feed:update', {
+      socketID: -1,
+      message: feed.pluck('message').concat([users.status()])
+    });
+  });
+
+  // when the client emits 'feed:new', this listens and executes
+  socket.on('feed:new', function(data) {
+    // we tell the client to execute 'new message'
+    var feedItem = new FeedItem({
+      time: (new Date()).getTime(),
+      from: socket.id,
+      message: data
+    });
+    feed.add(feedItem);
+    _broadcastFeedUpdate(data);
+  });
+
+  // when the user disconnects.. perform this
+  socket.on('disconnect', function() {
+    var user = users.findWhere({
+      socketID: socket.id
+    });
+    if (user !== undefined) {
+      users.remove(user);
+      _broadcastFeedUpdate(socket.id + ' left');
+      _broadcastFeedUpdate(users.status());
+    }
+  });
 
   /**
    * drawable:create

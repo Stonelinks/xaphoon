@@ -1,11 +1,50 @@
 extends layout
 
+block append body
+  .container
+    .row
+      .col-xs-8#canvas
+        h1 here be canvas
+      .col-xs-4#feed
+
 block append js
   script(src='/socket.io/socket.io.js')
   script(src='/vendor/jquery/dist/jquery.min.js')
   script(src='/vendor/underscore/underscore.js')
-  script(src='/vendor/underscore/underscore.js')
   script(src='/vendor/backbone/backbone.js')
+  script(src='/vendor/marionette/lib/backbone.marionette.min.js')
   script(src='/vendor/backbone.iobind/dist/backbone.iosync.js')
   script(src='/vendor/backbone.iobind/dist/backbone.iobind.js')
   script(src='/js/main.js')
+  script(type='text/javascript')
+    | document.write('<script src="http://'
+    | + (location.host || 'localhost').split(':')[0]
+    | + ':35729/livereload.js?snipver=1" type="text/javascript"><\/script>')
+
+block append body
+
+  script#feed-template(type='text/html')
+    .panel.panel-primary
+      .panel-body
+        .input-group
+          span.input-group-btn
+            button#btn-chat.btn.btn-link.btn-sm
+              strong(style='color: green;')
+                | >>
+          input#chat-input.form-control.input-sm(type='text', placeholder='Type your message here...')
+      .panel-footer
+        pre.feed
+
+  script#feed-item-template(type='text/html')
+    | <% if (mode == 'tx') { %>
+    strong(style='color: green; display: inline;')
+      | << 
+    strong
+      | <%= message + '\n' %>
+    | <% } else { %>
+    strong(style='color: red; display: inline;')
+      | >> 
+    strong
+      | <%= message + '\n' %>
+    | <% } %>
+    

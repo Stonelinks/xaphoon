@@ -1,18 +1,64 @@
 window.socket = io.connect('http://localhost');
 
-// We are going to put our app in the minimal namespace.
-var xaphoon = {};
+var xaphoon = new Backbone.Marionette.Application();
 
-/**
- * App#Router
- *
- * There is only one route in this app. It creates the new
- * Todos Collection then passes it to the form and list views.
- *
- * Then append the views to our page.
- */
+xaphoon.addInitializer(function(options) {
+  xaphoon.addRegions({
+    feed: '#feed',
+    renderer: '#renderer'
+  });
+});
 
-xaphoon.App = Backbone.Router.extend({
+var broadCast = function(data) {
+  socket.emit('feed:new', data);
+};
+
+var feedView = Marionette.ItemView.extend({
+  template: '#feed-template',
+
+  events: {
+    'keydown': 'keyAction'
+  },
+
+  keyAction: function(e) {
+    var code = e.keyCode || e.which;
+    var message = this.$el.find('#chat-input').val();
+    if (code == 13 && message != '') {
+      this.$el.find('#chat-input').val('');
+      socket.emit('feed:new', message);
+      this.logEvent(message, 'tx');
+    }
+  },
+
+  logEvent: function(message, mode) {
+    mode = mode || 'rx'; // or tx
+    var t = _.template($('#feed-item-template').text());
+    this.$el.find('.feed').prepend(t({
+      mode: mode,
+      message: message
+    }));
+    console.log((mode == 'tx' ? '<< ' : '>> ') + message);
+  },
+
+  initialize: function(options) {
+    this.once('render', function() {
+      var _this = this;
+      socket.on('feed:update', function(data) {
+        if (_.isArray(data.message)) {
+          data.message.forEach(function(m) {
+            _this.logEvent(m);
+          });
+        }
+        else {
+          _this.logEvent(data.message);
+        }
+      });
+      socket.emit('feed:init');
+    });
+  }
+});
+
+var router = Backbone.Router.extend({
   routes: {
     '': 'index',
     '/': 'index'
@@ -39,20 +85,16 @@ xaphoon.App = Backbone.Router.extend({
     });
 
     sceneObjects.fetch();
+
+    var feed = new feedView();
+    xaphoon.feed.show(feed);
   }
 });
 
-/**
- * Todo#Model
- *
- * The todo model will bind to the servers `update` and
- * `delete` events. We broadcast these events on the completion
- * and removing of an event.
- *
- * The `noIoBind` default value of false so that models that
- * are created via the collection are bound.
- *
- */
+xaphoon.addInitializer(function(options) {
+  new router();
+  Backbone.history.start();
+});
 
 xaphoon.DrawableModel = Backbone.Model.extend({
   urlRoot: 'drawable',
@@ -139,7 +181,6 @@ xaphoon.DrawableCollection = Backbone.Collection.extend({
   }
 });
 
-
 xaphoon.Renderer = Backbone.View.extend({
   id: 'renderer',
 
@@ -191,6 +232,10 @@ var remove = function(o) {
 
 // When the page is ready, create a new app and trigger the router.
 $(document).ready(function() {
-  window.app = new xaphoon.App();
-  Backbone.history.start();
+  // socket.on('user joined', function(data) {
+    // $('#numusers').text(data.numUsers);
+  // });
+
+  window.xaphoon = xaphoon;
+  xaphoon.start();
 });
