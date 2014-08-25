@@ -20,8 +20,15 @@ app.use(bodyParser.urlencoded({
 app.use(express.static(path.join(__dirname, 'public')));
 
 var router = express.Router();
+
+// supremely ghetto
+var os = require('os')
+app.set('env', os.hostname() == 'void71892' ? 'development' : 'production');
+
 router.get('/', function(req, res) {
-  res.render('index');
+  res.render('index', {
+    env: app.get('env')
+  });
 });
 app.use('/', router);
 
@@ -45,16 +52,18 @@ if (app.get('env') === 'development') {
     });
   });
 }
+else {
 
-// production error handler
-// no stacktraces leaked to user
-app.use(function(err, req, res, next) {
-  res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: {}
+  // production error handler
+  // no stacktraces leaked to user
+  app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('error', {
+      message: err.message,
+      error: {}
+    });
   });
-});
+}
 
 app.set('port', process.env.PORT || 3000);
 

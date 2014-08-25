@@ -1,4 +1,4 @@
-window.socket = io.connect('http://localhost');
+window.socket = io.connect();
 
 var xaphoon = new Backbone.Marionette.Application();
 

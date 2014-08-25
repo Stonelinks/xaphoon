@@ -3,9 +3,6 @@
   "version": "0.0.0",
   "description": "Backbone + THREE.js experiment",
   "main": "server.js",
-  "scripts": {
-    "postinstall": "bower install"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Stonelinks/xaphoon.git"
@@ -33,5 +30,8 @@
     "grunt-nodemon": "^0.3.0",
     "load-grunt-tasks": "^0.6.0",
     "time-grunt": "^1.0.0"
+  },
+  "engines": {
+    "node": "0.10.x"
   }
 }
