@@ -1,4 +1,4 @@
-xaphoon.DrawableModel = Backbone.Model.extend({
+var RealtimeModel = Backbone.Model.extend({
   urlRoot: 'drawable',
 
   noIoBind: false,
@@ -41,7 +41,6 @@ xaphoon.DrawableModel = Backbone.Model.extend({
   }
 });
 
-
 /**
  * Todos#Collection
  *
@@ -50,8 +49,8 @@ xaphoon.DrawableModel = Backbone.Model.extend({
  * using socket.io upon creation.
  */
 
-xaphoon.DrawableCollection = Backbone.Collection.extend({
-  model: xaphoon.DrawableModel,
+var RealtimeCollection = Backbone.Collection.extend({
+  model: RealtimeModel,
 
   url: 'drawable',
 

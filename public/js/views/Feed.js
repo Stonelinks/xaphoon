@@ -1,4 +1,4 @@
-var feedView = Marionette.ItemView.extend({
+var FeedView = Marionette.ItemView.extend({
   template: '#feed-template',
 
   logEvent: function(message, mode) {
