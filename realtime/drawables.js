@@ -1,5 +1,6 @@
 // Drawable definition and functions
 var Backbone = require('backbone');
+var _ = require('lodash');
 
 var Drawable = Backbone.Model.extend({});
 var Drawables = Backbone.Collection.extend({
@@ -20,8 +21,9 @@ var attachSocketEvents = function(socket) {
    */
 
   socket.on('drawable:create', function(data, callback) {
-    var drawable = new Drawable(data)
-    drawables.add(drawable)
+    var drawable = new Drawable(data);
+    drawable.set('id', _.uniqueId());
+    drawables.add(drawable);
 
     var json = drawable.toJSON();
 
@@ -49,7 +51,7 @@ var attachSocketEvents = function(socket) {
    */
 
   socket.on('drawable:update', function(data, callback) {
-    
+
     var drawable = drawables.get(data.id);
     if (drawable !== undefined) {
       drawable.set(data);
@@ -69,7 +71,7 @@ var attachSocketEvents = function(socket) {
    */
 
   socket.on('drawable:delete', function(data, callback) {
-    
+
     var drawable = drawables.get(data.id);
     if (drawable !== undefined) {
       var json = drawable.toJSON();

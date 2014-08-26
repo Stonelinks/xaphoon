@@ -69,24 +69,52 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
     this.scene.add(light);
 
     var _this = this;
-    
-    var drawable = new Drawable()
-    drawable.on('texture:loaded', function() {
-      _this._render();
-    })
 
-    this.control = new THREE.TransformControls(this.camera, this.renderer.domElement);
+    // var drawable = new Drawable()
+    // drawable.on('texture:loaded', function() {
+      // _this._render();
+    // })
 
-    this.control.addEventListener('change', function() {
-      _this._render();
-    });
-    
-    var mesh = drawable.getMesh(this.renderer)
+    // this.control = new THREE.TransformControls(this.camera, this.renderer.domElement);
 
+    // this.control.addEventListener('change', function() {
+      // _this._render();
+    // });
+
+    // var mesh = drawable.getMesh(this.renderer)
+
+    // this.scene.add(mesh);
+
+    // this.control.attach(mesh);
+    // this.scene.add(this.control);
+  },
+
+  addDrawable: function(drawable) {
+    console.log('add drawable ' + drawable.id);
+    var mesh = drawable.getMesh(this.renderer);
     this.scene.add(mesh);
+    this._render();
+  },
 
-    this.control.attach(mesh);
-    this.scene.add(this.control);
+  removeDrawable: function(drawable) {
+    console.log('remove drawable ' + drawable.id);
+    var mesh = drawable.getMesh(this.renderer);
+    this.scene.remove(mesh);
+    this._render();
+  },
+
+  collectionEvents: {
+    'add': function(drawable) {
+      this.addDrawable(drawable);
+    },
+
+    'remove': function(drawable) {
+      this.removeDrawable(drawable);
+    },
+
+    'texture:loaded': function() {
+      this._render();
+    }
   },
 
   onWindowResize: function() {
@@ -98,7 +126,7 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
   },
 
   _render: function() {
-    this.control.update();
+    // this.control.update();
     this.renderer.render(this.scene, this.camera);
   },
 
@@ -114,43 +142,10 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
         _this.onWindowResize();
       }, false);
 
+      this.collection.fetch();
+
       _this._render();
     });
-  }
-});
-
-
-
-
-xaphoon.Renderer = Backbone.View.extend({
-  id: 'renderer',
-
-  initialize: function(todos) {
-
-    this.DrawableCollection = DrawableCollection;
-
-    // this is called upon fetch
-    this.todos.bind('reset', this.render);
-
-    // this is called when the collection adds a new todo from the server
-    this.todos.bind('add', this.addDrawable);
-    this.todos.bind('add', this.removeDrawable);
-
-    this._render();
-  },
-
-  render: function() {
-    var self = this;
-
-    this.DrawableCollection.each(function(todo) {
-      self.addDrawable(todo);
-    });
-
-    return this;
-  },
-
-  addDrawable: function(drawable) {
-
   }
 });
 
@@ -159,14 +154,18 @@ var add = function(attrs) {
   // We don't want ioBind events to occur as there is no id.
   // We extend Todo#Model pattern, toggling our flag, then create
   // a new todo from that.
-  var d = xaphoon.DrawableModel.extend({ noIoBind: true });
+  var _Drawable = Drawable.extend({
+    noIoBind: true
+  });
 
-  var _object = new d(attrs);
-  _object.save();
+  var drawable = new _Drawable(attrs);
+  drawable.save();
 };
 
-var remove = function(o) {
+var remove = function(drawable) {
   // Silent is true so that we react to the server
   // broadcasting the remove event.
-  o.destroy({ silent: true });
+  drawable.destroy({
+    silent: true
+  });
 };
