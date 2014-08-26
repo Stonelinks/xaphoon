@@ -69,21 +69,20 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
     this.scene.add(light);
 
     var _this = this;
-    var texture = THREE.ImageUtils.loadTexture('/img/crate.gif', new THREE.UVMapping(), function() {
+    
+    var drawable = new Drawable()
+    drawable.on('texture:loaded', function() {
       _this._render();
-    });
-    texture.anisotropy = this.renderer.getMaxAnisotropy();
-
-    var geometry = new THREE.BoxGeometry(200, 200, 200);
-    var material = new THREE.MeshLambertMaterial({ map: texture });
+    })
 
     this.control = new THREE.TransformControls(this.camera, this.renderer.domElement);
 
     this.control.addEventListener('change', function() {
       _this._render();
     });
+    
+    var mesh = drawable.getMesh(this.renderer)
 
-    var mesh = new THREE.Mesh(geometry, material);
     this.scene.add(mesh);
 
     this.control.attach(mesh);
