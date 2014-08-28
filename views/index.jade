@@ -24,9 +24,11 @@ block append js
   script(src='http://threejs.org/examples/js/controls/TransformControls.js')
 
   //
-    the app  
+    the app
   script(src='/js/app.js')
   script(src='/js/models/RealtimeModel.js')
+  script(src='/js/models/User.js')
+  script(src='/js/models/Feed.js')
   script(src='/js/models/Drawables.js')
   script(src='/js/views/Feed.js')
   script(src='/js/views/ThreeJSRenderer.js')
@@ -65,17 +67,21 @@ block append body
       .container-fluid
         ul.nav.navbar-nav
           li
-            a#feed-toggle(href='#') Toggle Feed
+            a#feed-toggle(href='javascript:void(0)') Toggle Feed
           li
-            a#translate-mode(href='#')
+            a#translate-mode(href='javascript:void(0)')
               span.glyphicon.glyphicon-move
               |  Move
           li
-            a#rotate-mode(href='#')
+            a#rotate-mode(href='javascript:void(0)')
               span.glyphicon.glyphicon-refresh
               |  Rotate
           li
-            a#scale-mode(href='#')
+            a#scale-mode(href='javascript:void(0)')
               span.glyphicon.glyphicon-resize-full
               |  Scale
+          li
+            a#add-box(href='javascript:void(0)')
+              span.glyphicon.glyphicon-plus
+              |  Add box
     #canvas-anchor

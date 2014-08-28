@@ -13,7 +13,8 @@ var Drawable = RealtimeModel.extend({
   defaults: {
     texture: '/img/crate.gif',
     geometryType: 'BoxGeometry',
-    geometryParams: [200, 200, 200]
+    geometryParams: [200, 200, 200],
+    matrixWorld: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
   },
 
   _mesh: undefined,
@@ -21,7 +22,7 @@ var Drawable = RealtimeModel.extend({
   _material: undefined,
   _geometry: undefined,
 
-  initDrawable: function(renderer) {
+  initDrawable: function() {
     var _this = this;
 
     this._texture = THREE.ImageUtils.loadTexture(this.get('texture'), new THREE.UVMapping(), function() {
@@ -30,7 +31,7 @@ var Drawable = RealtimeModel.extend({
         _this.collection.trigger('texture:loaded');
       }
     });
-    this._texture.anisotropy = renderer.getMaxAnisotropy();
+    this._texture.anisotropy = window.render.renderer.getMaxAnisotropy();
 
     this._geometry = construct(THREE[this.get('geometryType')], this.get('geometryParams'));
 
@@ -39,13 +40,20 @@ var Drawable = RealtimeModel.extend({
     });
 
     this._mesh = new THREE.Mesh(this._geometry, this._material);
+    this.on('change:matrixWorld', function() {
+      // this._mesh.matrixWorld.set.apply(this, this.get('matrixWorld'));
+    });
   },
 
-  getMesh: function(renderer) {
+  getMesh: function() {
     if (this._mesh === undefined) {
-      this.initDrawable(renderer);
+      this.initDrawable();
     }
     return this._mesh;
+  },
+
+  initialize: function(options) {
+    RealtimeModel.prototype.initialize.apply(this, arguments);
   }
 });
 

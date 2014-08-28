@@ -76,8 +76,10 @@ server.listen(app.get('port'), function() {
 var io = require('socket.io').listen(server);
 
 var feed = require('./realtime/feed');
+var user = require('./realtime/user');
 var drawables = require('./realtime/drawables');
 io.on('connection', function(socket) {
-  feed.attachSocketEvents(socket);
-  drawables.attachSocketEvents(socket);
+  user.attachSocketEvents(socket);
+  // feed.attachSocketEvents(socket);
+  // drawables.attachSocketEvents(socket);
 });

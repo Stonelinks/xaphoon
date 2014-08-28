@@ -1,5 +1,6 @@
 // feed and user definitions and functions
 var Backbone = require('backbone');
+var realtimeModel = require('./realtimeModel');
 
 // the feed -- basically a log of events in the application
 var FeedItem = Backbone.Model.extend({});
@@ -8,17 +9,6 @@ var Feed = Backbone.Collection.extend({
   model: FeedItem
 });
 var feed = new Feed();
-
-// users
-var User = Backbone.Model.extend({});
-var Users = Backbone.Collection.extend({
-  model: User,
-
-  status: function() {
-    return this.length + ' people are here';
-  }
-});
-var users = new Users();
 
 // this function will attach things that make the feed / users work to socket events
 var attachSocketEvents = function(socket) {
@@ -31,10 +21,12 @@ var attachSocketEvents = function(socket) {
 
   // handy function for broadcasting feed:update events to all clients
   var _broadcastFeedUpdate = function(data) {
-    socket.broadcast.emit('feed:update', {
+    var _data = {
       socketID: socket.id,
       message: data
-    });
+    };
+    socket.emit('feed:update', _data);
+    socket.broadcast.emit('feed:update', _data);
   };
   _broadcastFeedUpdate(socket.id + ' joined');
   _broadcastFeedUpdate(users.status());
@@ -71,4 +63,6 @@ var attachSocketEvents = function(socket) {
   });
 };
 
-module.exports.attachSocketEvents = attachSocketEvents;
+module.exports.attachSocketEvents = function(socket) {
+  realtimeModel.attachSocketEvents('feed', feed, socket);
+};

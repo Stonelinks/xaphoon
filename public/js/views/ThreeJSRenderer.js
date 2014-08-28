@@ -1,5 +1,64 @@
 var canvasID = '#canvas-anchor';
 
+var Control = Backbone.Model.extend({
+
+  defaults: {
+    mode: 'translate', // translate, rotate or scale
+    attachedDrawable: undefined
+  },
+
+  _control: undefined,
+
+  initializeControl: function() {
+
+    var _this = this;
+
+    this._control = new THREE.TransformControls(window.render.renderer.camera, window.render.renderer.domElement);
+
+    this._control.addEventListener('change', function() {
+      window.render.renderer._render();
+
+      var drawable = this.get('attachedDrawable');
+      // var elements = drawable.getMesh().matrixWorld.elements;
+      // drawable.set('matrixWorld', elements);
+      // drawable.save({
+        // silent: true
+      // });
+    });
+
+    window.render.renderer.scene.add(this._control);
+    window.render.renderer._render();
+  },
+
+  getControl: function() {
+    if (this._control === undefined) {
+      this.initializeControl();
+    }
+    return this._control;
+  },
+
+  attachDrawable: function(drawable) {
+    if (this._control === undefined) {
+      this.initializeControl();
+    }
+    this.set('attachedDrawable', drawable);
+    this._control.attach(drawable.getMesh());
+  },
+
+  renderer: undefined,
+
+  initialize: function(options) {
+    this.renderer = options.renderer;
+
+    this.on('change:mode', function() {
+      if (this._control === undefined) {
+        this.initializeControl();
+      }
+      this._control.setMode(this.get('mode'));
+    });
+  }
+});
+
 var ThreeJSRenderer = Marionette.ItemView.extend({
 
   template: '#renderer-template',
@@ -16,17 +75,28 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
 
     'click #translate-mode': function(e) {
       e.preventDefault();
-      this.control.setMode('translate');
+      this.control.set('mode', 'translate');
     },
 
     'click #rotate-mode': function(e) {
       e.preventDefault();
-      this.control.setMode('rotate');
+      this.control.set('mode', 'rotate');
     },
 
     'click #scale-mode': function(e) {
       e.preventDefault();
-      this.control.setMode('scale');
+      this.control.set('mode', 'scale');
+    },
+
+    'click #add-box': function(e) {
+      e.preventDefault();
+
+      // We don't want ioBind events to occur as there is no id
+      var _Drawable = Drawable.extend({
+        noIoBind: true
+      });
+      var drawable = new _Drawable();
+      drawable.save();
     }
   },
 
@@ -43,8 +113,6 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
   scene: undefined,
 
   renderer: undefined,
-
-  control: undefined,
 
   setupRenderer: function() {
     this.renderer = new THREE.WebGLRenderer();
@@ -67,38 +135,18 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
     var light = new THREE.DirectionalLight(0xffffff, 2);
     light.position.set(1, 1, 1);
     this.scene.add(light);
-
-    var _this = this;
-
-    // var drawable = new Drawable()
-    // drawable.on('texture:loaded', function() {
-      // _this._render();
-    // })
-
-    // this.control = new THREE.TransformControls(this.camera, this.renderer.domElement);
-
-    // this.control.addEventListener('change', function() {
-      // _this._render();
-    // });
-
-    // var mesh = drawable.getMesh(this.renderer)
-
-    // this.scene.add(mesh);
-
-    // this.control.attach(mesh);
-    // this.scene.add(this.control);
   },
 
   addDrawable: function(drawable) {
     console.log('add drawable ' + drawable.id);
-    var mesh = drawable.getMesh(this.renderer);
+    var mesh = drawable.getMesh();
     this.scene.add(mesh);
     this._render();
   },
 
   removeDrawable: function(drawable) {
     console.log('remove drawable ' + drawable.id);
-    var mesh = drawable.getMesh(this.renderer);
+    var mesh = drawable.getMesh();
     this.scene.remove(mesh);
     this._render();
   },
@@ -106,10 +154,13 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
   collectionEvents: {
     'add': function(drawable) {
       this.addDrawable(drawable);
+      this.control.attachDrawable(drawable);
+      this._render();
     },
 
     'remove': function(drawable) {
       this.removeDrawable(drawable);
+      this._render();
     },
 
     'texture:loaded': function() {
@@ -126,9 +177,10 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
   },
 
   _render: function() {
-    // this.control.update();
     this.renderer.render(this.scene, this.camera);
   },
+
+  control: undefined,
 
   initialize: function(options) {
 
@@ -137,14 +189,18 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
       this.setupCamera();
       this.setupScene();
 
+      this.control = new Control({
+        renderer: this
+      });
+
       var _this = this;
       window.addEventListener('resize', function() {
         _this.onWindowResize();
       }, false);
 
-      this.collection.fetch();
-
       _this._render();
+
+      this.collection.fetch();
     });
   }
 });

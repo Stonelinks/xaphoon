@@ -1,14 +1,27 @@
 var FeedView = Marionette.ItemView.extend({
   template: '#feed-template',
 
+  getCursorForMode: function(mode) {
+    var dict = {
+      tx: '<<',
+      rx: '>>'
+    };
+    return dict[mode];
+  },
+
   logEvent: function(message, mode) {
     mode = mode || 'rx'; // or tx
+
+    var re = new RegExp(socket.io.engine.id, 'g');
+    message = message.replace(re, 'you');
+
     var t = _.template($('#feed-item-template').text());
     this.$el.find('.feed').prepend(t({
       mode: mode,
       message: message
     }));
-    console.log((mode == 'tx' ? '<< ' : '>> ') + message);
+
+    console.log(this.getCursorForMode(mode) + ' ' + message);
   },
 
   events: {
@@ -18,25 +31,35 @@ var FeedView = Marionette.ItemView.extend({
       if (code == 13 && message != '') {
         this.$el.find('#chat-input').val('');
         socket.emit('feed:new', message);
-        this.logEvent(message, 'tx');
+      }
+    }
+  },
+
+  collectionEvents: {
+    'add': function(feedItem) {
+
+      var mode;
+      if (data.socketID == socket.io.engine.id) {
+        mode = 'tx';
+      }
+      else {
+        mode = 'rx';
+      }
+
+      if (_.isArray(data.message)) {
+        data.message.forEach(function(m) {
+          _this.logEvent(m, mode);
+        });
+      }
+      else {
+        _this.logEvent(data.message, mode);
       }
     }
   },
 
   initialize: function(options) {
     this.once('render', function() {
-      var _this = this;
-      socket.on('feed:update', function(data) {
-        if (_.isArray(data.message)) {
-          data.message.forEach(function(m) {
-            _this.logEvent(m);
-          });
-        }
-        else {
-          _this.logEvent(data.message);
-        }
-      });
-      socket.emit('feed:init');
+      this.collection.fetch();
     });
   }
 });
