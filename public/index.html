@@ -1,0 +1,58 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta name="viewport" content="width=device-width"><title>Xaphoon</title><link rel="icon" href="/img/favicon.ico" type="image/x-icon"><link rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon"><link rel="stylesheet" href="http://fonts.googleapis.com/css?family=PT+Sans:400italic,400,700"><link rel="stylesheet" href="/css/style.css"></head><body><!--block nav
+  .landing
+    a.brand(href='/') Xaphoon
+    .tagline-bar Backbone + THREE.js experiment by 
+      a(href="http://stonelinks.github.io/", target="_blank") Lucas Doyle--><!--#wrapper
+  #sidebar-wrapper
+    #feed
+    
+  #page-content-wrapper
+    #renderer-anchor
+    --><a href="https://github.com/mashlol/omni-arena" class="no-select"><img ondragstart="return false;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png" alt="Fork me on GitHub"></a><div class="login-container no-select"><form id="login" onsubmit="return false;"><input placeholder="Enter a username to play..." type="text" autofocus="autofocus"></form></div><div class="arena-container"><div class="info-row no-select"><span class="kills-deaths">Kills: 0 - Deaths: 0</span><span class="online-players">Players Online: 0</span></div><canvas id="arena" width="800" height="600" class="fade-out"></canvas></div><!--script#feed-template(type='text/html')
+  input#chat-input.form-control.input-sm(type='text', placeholder='Type your message here...')
+  pre.feed
+  
+script#feed-item-template(type='text/html')
+  | <% if (mode == 'tx') { %>
+  strong(style='color: green; display: inline;')
+    | << 
+  strong
+    | <%= message + '\n' %>
+  | <% } else { %>
+  strong(style='color: red; display: inline;')
+    | >> 
+  strong
+    | <%= message + '\n' %>
+  | <% } %>
+  
+script#renderer-template(type='text/html')
+  nav.navbar.navbar-default
+    .container-fluid
+      ul.nav.navbar-nav
+        li
+          a#feed-toggle(href='javascript:void(0)') Toggle Feed
+        li
+          a#translate-mode(href='javascript:void(0)')
+            span.glyphicon.glyphicon-move
+            |  Move
+        li
+          a#rotate-mode(href='javascript:void(0)')
+            span.glyphicon.glyphicon-refresh
+            |  Rotate
+        li
+          a#scale-mode(href='javascript:void(0)')
+            span.glyphicon.glyphicon-resize-full
+            |  Scale
+        li
+          a#add-box(href='javascript:void(0)')
+            span.glyphicon.glyphicon-plus
+            |  Add box
+  #canvas-anchor--><!--[if lt IE 9]><script src="/vendor/html5shiv/dist/html5shiv.min.js"></script><script src="/vendor/respond/dest/respond.min.js"></script><![endif]--><!--dependencies--><script src="/socket.io/socket.io.js"></script><script src="/vendor/jquery/dist/jquery.min.js"></script><script src="/vendor/underscore/underscore.js"></script><script src="/vendor/backbone/backbone.js"></script><script src="/omni.js"></script><script src="/vendor/marionette/lib/backbone.marionette.min.js"></script><script src="/vendor/threejs/build/three.min.js"></script><script src="http://threejs.org/examples/js/controls/TransformControls.js"></script><!--the app--><script src="/js/app.js"></script><!--script(src='/js/models/RealtimeModel.js')
+script(src='/js/models/User.js')
+script(src='/js/models/Feed.js')
+script(src='/js/models/Drawables.js')
+script(src='/js/views/Feed.js')
+script(src='/js/views/ThreeJSRenderer.js')
+script(src='/js/Router.js')
+if env == 'development'
+  script(src='/js/debug.js')--><script src="/js/main.js"></script><script type="text/javascript"></script></body></html>
