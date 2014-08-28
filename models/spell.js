@@ -1,7 +1,6 @@
-var Omni = require('omni');
+var BaseModel = require('./BaseModel');
 
-module.exports = Omni.Model.extend({
-
+module.exports = BaseModel.extend({
   defaults: {
     x: 0,
     y: 0,
@@ -24,7 +23,9 @@ module.exports = Omni.Model.extend({
     (function(x, y, callback, collections) {
       var moveLoop = function() {
         // Check if colliding with any users
-        var usersInRoom = collections.users.where({room: _this.get('user').get('room')});
+        var usersInRoom = collections.users.where({
+          room: _this.get('user').get('room')
+        });
         for (var p in usersInRoom) {
           var user = usersInRoom[p];
           if (_this.get('user') != user && _this.approximatelyAt(user.get('x'), user.get('y'))) {

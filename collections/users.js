@@ -1,18 +1,8 @@
-var Omni = require('omni');
+var BaseCollection = require('./BaseCollection');
 var User = require('../models/user');
 
-module.exports = Omni.Collection.extend({
+module.exports = BaseCollection.extend({
   model: User,
-
-  nextID: function() {
-    var highest = 0;
-    this.each(function(model) {
-      if (model.id && model.id > highest) {
-        highest = model.id;
-      }
-    });
-    return highest + 1;
-  },
 
   findRoom: function() {
     var room = 1;
@@ -22,9 +12,5 @@ module.exports = Omni.Collection.extend({
       }
       room++;
     }
-  },
-
-  createPermission: function(connection) {
-    return true;
   }
 });

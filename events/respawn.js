@@ -1,11 +1,15 @@
 module.exports = {
   run: function(connection, collections, data) {
     if (!connection.user) {
-      return {error: 'Not logged in.'};
+      return {
+        error: 'Not logged in.'
+      };
     }
 
     if (connection.user.get('alive')) {
-      return {error: 'Still alive.'};
+      return {
+        error: 'Still alive.'
+      };
     }
 
     var room = collections.users.findRoom();

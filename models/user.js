@@ -1,6 +1,6 @@
-var Omni = require('omni');
+var BaseModel = require('./BaseModel');
 
-module.exports = Omni.Model.extend({
+module.exports = BaseModel.extend({
   defaults: {
     x: 0,
     y: 0,

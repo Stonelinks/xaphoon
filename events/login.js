@@ -12,12 +12,18 @@ function getRandomColor() {
 module.exports = {
   run: function(connection, collections, data) {
     if (connection.user) {
-      return {error: 'Already logged in.'};
+      return {
+        error: 'Already logged in.'
+      };
     }
+
     if (data.name) {
       if (collections.users.where({name: data.name}).length > 0) {
-        return {error: 'Someone already has that name.'};
+        return {
+          error: 'Someone already has that name.'
+        };
       }
+
       var newID = collections.users.nextID();
       var room = collections.users.findRoom();
       var newUser = new User({
@@ -28,6 +34,7 @@ module.exports = {
         color: getRandomColor(),
         room: room
       });
+
       connection.room = newUser.get('room');
       collections.users.add(newUser);
       connection.user = newUser;
