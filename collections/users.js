@@ -1,8 +1,8 @@
 var Omni = require('omni');
-var Spell = require('../models/spell');
+var User = require('../models/user');
 
 module.exports = Omni.Collection.extend({
-  model: Spell,
+  model: User,
 
   nextID: function() {
     var highest = 0;
@@ -12,6 +12,16 @@ module.exports = Omni.Collection.extend({
       }
     });
     return highest + 1;
+  },
+
+  findRoom: function() {
+    var room = 1;
+    while (true) {
+      if (this.where({room: room, alive: true}).length < 3) {
+        return room;
+      }
+      room++;
+    }
   },
 
   createPermission: function(connection) {

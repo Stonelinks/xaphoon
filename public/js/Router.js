@@ -17,7 +17,7 @@ var Router = Backbone.Router.extend({
       var _User = User.extend({
         noIoBind: true
       });
-      
+
       var _user = new _User();
       // users.once('add', function(newUser) {
         // user = newUser;
@@ -27,8 +27,8 @@ var Router = Backbone.Router.extend({
       _user.save();
       // users.fetch();
     };
-    
-    console.log(users.length)
+
+    console.log(users.length);
 
     // if (users.get(localStorage.__xaphoonUserID) === undefined) {
       // _createUser();

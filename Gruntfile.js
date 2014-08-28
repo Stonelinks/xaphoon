@@ -60,7 +60,7 @@ module.exports = function(grunt) {
         files: ['public/less/**/*.less'],
         tasks: ['less']
       },
-      
+
       jade: {
         files: ['templates/**/*.jade'],
         tasks: ['jade']
@@ -85,11 +85,11 @@ module.exports = function(grunt) {
         }
       }
     },
-    
+
     jade: {
       templates: {
         src: ['templates/index.jade'],
-        dest: 'public/index.html',
+        dest: 'public/index.html'
       }
     }
   });

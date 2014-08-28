@@ -1,11 +1,11 @@
 module.exports = {
-    run: function(connection, collections) {
-        if (connection.player) {
-            collections.players.remove(connection.player);
+  run: function(connection, collections) {
+    if (connection.user) {
+      collections.users.remove(connection.user);
 
-            // Decrement player count
-            var playerCount = collections.playerCount.at(0);
-            playerCount.set('count', playerCount.get('count') - 1);
-        }
+      // Decrement user count
+      var userCount = collections.userCount.at(0);
+      userCount.set('count', userCount.get('count') - 1);
     }
-}
+  }
+};
