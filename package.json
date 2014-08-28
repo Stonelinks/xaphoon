@@ -14,7 +14,7 @@
     "url": "https://github.com/Stonelinks/xaphoon/issues"
   },
   "dependencies": {
-    "omni": "^0.2.6"
+    "omni": "git+https://github.com/Stonelinks/omni.git"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
