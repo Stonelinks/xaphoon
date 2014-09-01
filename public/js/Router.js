@@ -5,28 +5,21 @@ var Router = Backbone.Router.extend({
 
   index: function() {
 
-    var users = Omni.Collections.users;
-
-    var login = new LoginView({
-      collection: users
-    });
+    var login = new LoginView();
     window.xaphoon.login.show(login);
 
-    window.xaphoon.once('login', function(user) {
-      // var feed = Omni.Collections.feed;
+    window.xaphoon.once('login', function() {
       var feedView = new FeedView({
-        // collection: feed,
-        user: user
+        _collection: Omni.Collections.feed
       });
       window.xaphoon.feed.show(feedView);
-    });
 
-    // var drawables = new Drawables();
-    // window.drawables = drawables;
-    // render = new ThreeJSRenderer({
-      // collection: drawables
-    // });
-    // window.xaphoon.renderer.show(render);
+      var _renderer = new ThreeJSRenderer({
+        _collection: Omni.Collections.drawables
+      });
+      window.xaphoon.renderer.show(_renderer);
+      // window._renderer = _renderer;
+    });
   }
 });
 

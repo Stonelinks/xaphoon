@@ -1,6 +1,6 @@
 var BaseCollection = require('./BaseCollection');
-var Spell = require('../models/Spell');
+var Drawable = require('../models/Drawable');
 
 module.exports = BaseCollection.extend({
-  model: Spell
+  model: Drawable
 });

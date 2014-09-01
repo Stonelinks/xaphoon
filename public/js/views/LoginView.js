@@ -20,9 +20,7 @@ var LoginView = Marionette.ItemView.extend({
             });
             _this.$el.hide();
             $('#wrapper').removeClass('fade-out');
-
-            window.xaphoon.trigger('update:user');
-            window.xaphoon.trigger('login', window.xaphoon.user);
+            window.xaphoon.trigger('login');
           }
         });
         $input.val('');
@@ -36,17 +34,11 @@ var LoginView = Marionette.ItemView.extend({
 
   initialize: function() {
     var _this = this;
-    window.xaphoon.on('update:user', function() {
-
-      // bind changes to user properties here
-      // window.xaphoon.user.on('change:alive', _this.checkIfDead.bind(_this));
-    });
     Omni.on('recheckPermissions', function() {
       if (window.xaphoon.user != null) {
         window.xaphoon.user = Omni.Collections.users.findWhere({
           id: window.xaphoon.user.id
         });
-        window.xaphoon.trigger('update:user');
       }
     });
 

@@ -1,16 +1,29 @@
-var FeedView = Marionette.ItemView.extend({
+window.sendFeedUpdate = function(message) {
+    Omni.trigger('feed', {
+    message: message
+  }, function(data) {
+
+    if (data.error != undefined) {
+      alert(data.error);
+    }
+  });
+};
+
+var FeedView = BaseRealtimeView.extend({
   template: '#feed-template',
 
   logEvent: function(message, user) {
     var user = user || {};
+    var name = user.name || undefined;
+    var color = user.color || 'black';
     var t = _.template($('#feed-item-template').text());
     this.$el.find('.feed').prepend(t({
-      name: user.name || undefined,
-      color: user.color || 'black',
+      name: name,
+      color: color,
       message: message
     }));
 
-    console.log(user.name + ': ' + message);
+    console.log((name === undefined ? '>> ' : name + ': ') + message);
   },
 
   events: {
@@ -19,21 +32,7 @@ var FeedView = Marionette.ItemView.extend({
       var $input = this.$el.find('input');
 
       if ($input.val()) {
-
-        Omni.trigger('feed', {
-          message: $input.val()
-        }, function(data) {
-
-          if (data.error != undefined) {
-            alert(data.error);
-          }
-          console.log('hello');
-          console.log(data);
-
-          if (data.success != undefined && data.id != undefined) {
-            console.log('marcos lopez');
-          }
-        });
+        window.sendFeedUpdate($input.val());
         $input.val('');
       }
 
@@ -47,15 +46,17 @@ var FeedView = Marionette.ItemView.extend({
     this.logEvent(Omni.Collections.userCount.at(0).get('count') + ' people online');
   },
 
+  _collectionEvents: {
+    'add': function(feedItem) {
+      this.logEvent(feedItem.get('message'), feedItem.get('user'));
+    }
+  },
+
   initialize: function(options) {
+    BaseRealtimeView.prototype.initialize.apply(this, arguments);
     this.once('render', function() {
       Omni.Collections.userCount.at(0).on('change:count', this.updateOnline.bind(this));
       this.updateOnline();
-
-      var _this = this;
-      Omni.Collections.feed.listenTo(Omni.Collections.feed, 'add', function(feedItem) {
-        _this.logEvent(feedItem.get('message'), feedItem.get('user'));
-      });
     });
   }
 });

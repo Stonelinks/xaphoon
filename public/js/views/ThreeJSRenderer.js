@@ -1,65 +1,6 @@
 var canvasID = '#canvas-anchor';
 
-var Control = Backbone.Model.extend({
-
-  defaults: {
-    mode: 'translate', // translate, rotate or scale
-    attachedDrawable: undefined
-  },
-
-  _control: undefined,
-
-  initializeControl: function() {
-
-    var _this = this;
-
-    this._control = new THREE.TransformControls(window.render.renderer.camera, window.render.renderer.domElement);
-
-    this._control.addEventListener('change', function() {
-      window.render.renderer._render();
-
-      var drawable = this.get('attachedDrawable');
-      // var elements = drawable.getMesh().matrixWorld.elements;
-      // drawable.set('matrixWorld', elements);
-      // drawable.save({
-        // silent: true
-      // });
-    });
-
-    window.render.renderer.scene.add(this._control);
-    window.render.renderer._render();
-  },
-
-  getControl: function() {
-    if (this._control === undefined) {
-      this.initializeControl();
-    }
-    return this._control;
-  },
-
-  attachDrawable: function(drawable) {
-    if (this._control === undefined) {
-      this.initializeControl();
-    }
-    this.set('attachedDrawable', drawable);
-    this._control.attach(drawable.getMesh());
-  },
-
-  renderer: undefined,
-
-  initialize: function(options) {
-    this.renderer = options.renderer;
-
-    this.on('change:mode', function() {
-      if (this._control === undefined) {
-        this.initializeControl();
-      }
-      this._control.setMode(this.get('mode'));
-    });
-  }
-});
-
-var ThreeJSRenderer = Marionette.ItemView.extend({
+var ThreeJSRenderer = BaseRealtimeView.extend({
 
   template: '#renderer-template',
 
@@ -74,29 +15,37 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
     },
 
     'click #translate-mode': function(e) {
-      e.preventDefault();
       this.control.set('mode', 'translate');
+      e.preventDefault();
+      e.stopPropagation();
     },
 
     'click #rotate-mode': function(e) {
-      e.preventDefault();
       this.control.set('mode', 'rotate');
+      e.preventDefault();
+      e.stopPropagation();
     },
 
     'click #scale-mode': function(e) {
-      e.preventDefault();
       this.control.set('mode', 'scale');
+      e.preventDefault();
+      e.stopPropagation();
     },
 
     'click #add-box': function(e) {
-      e.preventDefault();
-
-      // We don't want ioBind events to occur as there is no id
-      var _Drawable = Drawable.extend({
-        noIoBind: true
+      Omni.trigger('drawable', {
+        texture: '/img/crate.gif',
+        geometryType: 'BoxGeometry',
+        geometryParams: [200, 200, 200],
+        matrixWorld: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+      }, function(data) {
+        if (data.error != undefined) {
+          alert(data.error);
+        }
       });
-      var drawable = new _Drawable();
-      drawable.save();
+
+      e.preventDefault();
+      e.stopPropagation();
     }
   },
 
@@ -138,23 +87,23 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
   },
 
   addDrawable: function(drawable) {
-    console.log('add drawable ' + drawable.id);
+    window.sendFeedUpdate('add drawable ' + drawable.id);
     var mesh = drawable.getMesh();
     this.scene.add(mesh);
     this._render();
   },
 
   removeDrawable: function(drawable) {
-    console.log('remove drawable ' + drawable.id);
+    window.sendFeedUpdate('remove drawable ' + drawable.id);
     var mesh = drawable.getMesh();
     this.scene.remove(mesh);
     this._render();
   },
 
-  collectionEvents: {
+  _collectionEvents: {
     'add': function(drawable) {
       this.addDrawable(drawable);
-      this.control.attachDrawable(drawable);
+      // this.control.attachDrawable(drawable);
       this._render();
     },
 
@@ -183,15 +132,16 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
   control: undefined,
 
   initialize: function(options) {
+    BaseRealtimeView.prototype.initialize.apply(this, arguments);
 
     this.once('show', function() {
       this.setupRenderer();
       this.setupCamera();
       this.setupScene();
 
-      this.control = new Control({
-        renderer: this
-      });
+      // this.control = new Control({
+        // renderer: this
+      // });
 
       var _this = this;
       window.addEventListener('resize', function() {
@@ -199,29 +149,6 @@ var ThreeJSRenderer = Marionette.ItemView.extend({
       }, false);
 
       _this._render();
-
-      this.collection.fetch();
     });
   }
 });
-
-var add = function(attrs) {
-
-  // We don't want ioBind events to occur as there is no id.
-  // We extend Todo#Model pattern, toggling our flag, then create
-  // a new todo from that.
-  var _Drawable = Drawable.extend({
-    noIoBind: true
-  });
-
-  var drawable = new _Drawable(attrs);
-  drawable.save();
-};
-
-var remove = function(drawable) {
-  // Silent is true so that we react to the server
-  // broadcasting the remove event.
-  drawable.destroy({
-    silent: true
-  });
-};

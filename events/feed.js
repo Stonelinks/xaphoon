@@ -22,7 +22,7 @@ module.exports = {
     collections.feed.add(newFeedItem);
     
     return {
-      success: 'Successfully logged in.',
+      success: true,
       id: newID
     };
   }

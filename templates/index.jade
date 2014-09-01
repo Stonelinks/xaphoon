@@ -17,24 +17,22 @@ block append js
   script(src='/vendor/underscore/underscore.js')
   script(src='/vendor/backbone/backbone.js')
   script(src='/omni.js')
-  //
-    script(src='/vendor/marionette/lib/backbone.marionette.min.js')
-  script(src='/vendor/marionette/lib/backbone.marionette.js')
-  //
-    script(src='/vendor/threejs/build/three.min.js')
-    script(src='http://threejs.org/examples/js/controls/TransformControls.js')
+  script(src='/vendor/marionette/lib/backbone.marionette.min.js')
+  script(src='/vendor/threejs/build/three.min.js')
+  script(src='http://threejs.org/examples/js/controls/TransformControls.js')
 
   //
     the app
   script(src='/js/app.js')
-  //
-    script(src='/js/models/Drawables.js')
-    script(src='/js/views/ThreeJSRenderer.js')
+  script(src='/js/models/Drawable.js')
+  script(src='/js/models/Control.js')
+  script(src='/js/views/BaseRealtimeView.js')
+  script(src='/js/views/ThreeJSRenderer.js')
   script(src='/js/views/FeedView.js')
   script(src='/js/views/LoginView.js')
   script(src='/js/Router.js')
   script(src='/js/main.js')
-  
+
   script(type='text/javascript')
     | document.write('<script src="http://'
     | + (location.host || 'localhost').split(':')[0]
@@ -48,7 +46,7 @@ block append body
     pre.feed
 
   script#feed-item-template(type='text/html')
-    | <strong style='color: <%= color %>; display: inline;'><%= name === undefined ? '>>' : name + ':'  %> </strong><strong><%= message + '\n' %><strong>
+    | <strong style='color: <%= color %>; display: inline;'><%= name === undefined ? '>>' : name + ':' %> </strong><strong><%= message + '\n' %><strong>
 
   script#renderer-template(type='text/html')
     nav.navbar.navbar-default
