@@ -6200,7 +6200,7 @@ hr {
     line-height: normal;
     text-align: center;
     margin: 0;
-    padding: 30px 0 10px;
+    padding: 10px 0 10px;
     color: #fff;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
     -webkit-transition: all 0.5s ease;
@@ -6340,44 +6340,13 @@ hr {
   }
 }
 /* ----------------------------------- */
-* {
-  margin: 0;
-  padding: 0;
-}
-body {
-  background: #222;
-  color: #eee;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
 .no-select {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
 }
 .fade-out {
-  opacity: .3;
-}
-.info-row {
-  height: 50px;
-  background: #2C3E50;
-  line-height: 50px;
-  box-sizing: border-box;
-  padding: 0 20px;
-}
-.arena-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin: -300px 0 0 -400px;
-}
-.kills-deaths {
-  float: left;
-}
-.online-users {
-  float: right;
-}
-canvas {
-  background: #eee;
+  opacity: 0.0;
 }
 .login-container {
   width: 200px;
@@ -6397,27 +6366,8 @@ canvas {
   left: 0;
   padding: 5px;
 }
-img {
-  position: absolute;
-  top: 0;
-  right: 0;
-  border: 0;
-  z-index: 1;
-}
-button {
-  height: 40px;
-  width: 130px;
-  margin-top: 10px;
-  color: #fff;
-  background: #2980B9;
-  border: 0;
-  font-size: 18px;
-  cursor: pointer;
-  box-shadow: 0px 2px 8px -3px #000000;
-}
-button:hover {
-  background: #49a0d9;
-}
-button:active {
-  background: #096099;
+.outer-shadow {
+  -webkit-box-shadow: 0px 0px 88px 25px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 0px 0px 88px 25px rgba(0, 0, 0, 0.75);
+  box-shadow: 0px 0px 88px 25px rgba(0, 0, 0, 0.75);
 }

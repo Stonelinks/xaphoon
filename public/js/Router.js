@@ -5,54 +5,32 @@ var Router = Backbone.Router.extend({
 
   index: function() {
 
-    var feedCollection = new FeedCollection();
-    var users = new Users();
+    var users = Omni.Collections.users;
 
-    users.fetch();
-
-    var user;
-    var _createUser = function() {
-
-      // We don't want ioBind events to occur as there is no id
-      var _User = User.extend({
-        noIoBind: true
-      });
-
-      var _user = new _User();
-      // users.once('add', function(newUser) {
-        // user = newUser;
-        // localStorage.__xaphoonUserID = user.id;
-        // debugger;
-      // });
-      _user.save();
-      // users.fetch();
-    };
-
-    console.log(users.length);
-
-    // if (users.get(localStorage.__xaphoonUserID) === undefined) {
-      // _createUser();
-    // }
-    // else {
-      // user = users.get(localStorage.__xaphoonUserID);
-    // }
-    _createUser();
-
-    var feed = new FeedView({
-      collection: feedCollection
+    var login = new LoginView({
+      collection: users
     });
-    xaphoon.feed.show(feed);
+    window.xaphoon.login.show(login);
+
+    window.xaphoon.once('login', function(user) {
+      // var feed = Omni.Collections.feed;
+      var feedView = new FeedView({
+        // collection: feed,
+        user: user
+      });
+      window.xaphoon.feed.show(feedView);
+    });
 
     // var drawables = new Drawables();
     // window.drawables = drawables;
     // render = new ThreeJSRenderer({
       // collection: drawables
     // });
-    // xaphoon.renderer.show(render);
+    // window.xaphoon.renderer.show(render);
   }
 });
 
-xaphoon.addInitializer(function(options) {
+window.xaphoon.addInitializer(function(options) {
   new Router();
   Backbone.history.start();
 });

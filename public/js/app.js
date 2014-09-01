@@ -1,10 +1,9 @@
-window.socket = io.connect();
+var xaphoon = window.xaphoon = new Backbone.Marionette.Application();
 
-var xaphoon = new Backbone.Marionette.Application();
-
-xaphoon.addInitializer(function(options) {
-  xaphoon.addRegions({
-    feed: '#feed',
+window.xaphoon.addInitializer(function(options) {
+  window.xaphoon.addRegions({
+    feed: '#feed-anchor',
+    login: '#login-anchor',
     renderer: '#renderer-anchor'
   });
 });

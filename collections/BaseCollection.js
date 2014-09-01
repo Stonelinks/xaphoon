@@ -1,14 +1,9 @@
 var Omni = require('omni');
+var _ = require('lodash');
 
 module.exports = Omni.Collection.extend({
   nextID: function() {
-    var highest = 0;
-    this.each(function(model) {
-      if (model.id && model.id > highest) {
-        highest = model.id;
-      }
-    });
-    return highest + 1;
+    return _.uniqueId()
   },
 
   createPermission: function(connection) {

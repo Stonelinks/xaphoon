@@ -1,4 +1,4 @@
-var User = require('../models/user');
+var User = require('../models/User');
 
 function getRandomColor() {
   var letters = '0123456789ABC'.split('');
@@ -29,8 +29,6 @@ module.exports = {
       var newUser = new User({
         id: newID,
         name: data.name,
-        x: Math.round(Math.random() * 700 + 50),
-        y: Math.round(Math.random() * 500 + 50),
         color: getRandomColor(),
         room: room
       });
