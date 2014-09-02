@@ -12,16 +12,25 @@ block append js
 
   //
     dependencies
+    
+  //
+    backbone
   script(src='/vendor/jquery/dist/jquery.min.js')
   script(src='/vendor/underscore/underscore.js')
   script(src='/vendor/backbone/backbone.js')
 
+  //
+    realtime things
   script(src='/socket.io/socket.io.js')
   script(src='/socket.io/backbone.io.js')
-
+  
+  //
+    marionette
   script(src='/vendor/marionette/lib/backbone.marionette.min.js')
-
-  script(src='/vendor/threejs/build/three.min.js')
+  
+  //
+    threejs
+  script(src='/vendor/threejs/build/three.js')
   script(src='http://threejs.org/examples/js/controls/TransformControls.js')
 
   //

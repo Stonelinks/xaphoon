@@ -1,51 +1,64 @@
+
+// creates instances
+var construct = function(constructor, args) {
+  var f = function() {
+    return constructor.apply(this, args);
+  };
+  f.prototype = constructor.prototype;
+  return new f();
+};
+
 var Drawable = BaseRealtimeModel.extend({
   defaults: {
     texture: '/img/crate.gif',
     geometryType: 'BoxGeometry',
     geometryParams: [200, 200, 200],
-    matrixWorld: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    matrix: [1, 0, 0, 100, 0, 1, 0, 101, 0, 0, 1, 102, 0, 0, 0, 1]
   },
 
-  mesh: undefined,
-  texture: undefined,
-  material: undefined,
-  geometry: undefined,
+  _mesh: undefined,
+  _texture: undefined,
+  _material: undefined,
+  _geometry: undefined,
 
   initDrawable: function() {
     var _this = this;
 
-    this.texture = THREE.ImageUtils.loadTexture(this.get('texture'), new THREE.UVMapping(), function() {
-      _this.trigger('texture:loaded');
+    this._texture = THREE.ImageUtils.loadTexture(this.get('texture'), new THREE.UVMapping(), function() {
       if (_this.collection !== undefined) {
         _this.collection.trigger('texture:loaded');
       }
     });
 
-    this.texture.anisotropy = window._renderer.renderer.getMaxAnisotropy();
-    var construct = function(constructor, args) {
-      var f = function() {
-        return constructor.apply(this, args);
-      };
-      f.prototype = constructor.prototype;
-      return new f();
-    };
+    this._texture.anisotropy = window._renderer.renderer.getMaxAnisotropy();
 
-    this.geometry = construct(THREE[this.get('geometryType')], this.get('geometryParams'));
+    this._geometry = construct(THREE[this.get('geometryType')], this.get('geometryParams'));
 
-    this.material = new THREE.MeshLambertMaterial({
-      map: this.texture
+    this._material = new THREE.MeshLambertMaterial({
+      map: this._texture
     });
 
-    this.mesh = new THREE.Mesh(this.geometry, this.material);
-    this.on('change:matrixWorld', function() {
-      // this.mesh.matrixWorld.set.apply(this, this.get('matrixWorld'));
+    this._mesh = new THREE.Mesh(this._geometry, this._material);
+
+    this.on('change:matrix', function() {
+      if (_this.collection !== undefined) {
+        _this.collection.trigger('matrix:update');
+      }
+      console.log('Drawable: update mesh');
+      this.updateMesh();
     });
+    this.updateMesh();
+  },
+
+  updateMesh: function() {
+    this._mesh.matrix.set.apply(this._mesh.matrix, this.get('matrix'));
+    this._mesh.matrix.decompose(this._mesh.position, this._mesh.quaternion, this._mesh.scale);
   },
 
   getMesh: function() {
-    if (this.mesh === undefined) {
+    if (this._mesh === undefined) {
       this.initDrawable();
     }
-    return this.mesh;
+    return this._mesh;
   }
 });

@@ -1,9 +1,5 @@
 var canvasID = '#canvas-anchor';
 
-var debug = function(m) {
-  console.log('ThreeJSRenderer: ' + m);
-};
-
 var ThreeJSRenderer = BaseRealtimeView.extend({
 
   template: '#renderer-template',
@@ -43,8 +39,7 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
       var newDrawable = new Drawable({
         texture: '/img/crate.gif',
         geometryType: 'BoxGeometry',
-        geometryParams: [200, 200, 200],
-        matrixWorld: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+        geometryParams: [200, 200, 200]
       });
       window.drawables.add(newDrawable);
       newDrawable.save();
@@ -92,14 +87,14 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
   },
 
   addDrawable: function(drawable) {
-    debug('add drawable ' + drawable.id);
+    console.log('ThreeJSRenderer: add drawable');
     var mesh = drawable.getMesh();
     this.scene.add(mesh);
     this._render();
   },
 
   removeDrawable: function(drawable) {
-    debug('remove drawable ' + drawable.id);
+    console.log('ThreeJSRenderer: remove drawable');
     var mesh = drawable.getMesh();
     this.scene.remove(mesh);
     this._render();
@@ -108,12 +103,24 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
   collectionEvents: {
     'add': function(drawable) {
       this.addDrawable(drawable);
-      // this.control.attachDrawable(drawable);
+      this.control.attachDrawable(drawable);
       this._render();
     },
 
     'remove': function(drawable) {
       this.removeDrawable(drawable);
+      this._render();
+    },
+
+    'change': function() {
+      console.log('ThreeJSRenderer: change drawable');
+      var _this = this;
+      setTimeout(function() {
+        _this._render();
+      }, 200);
+    },
+
+    'matrix:update': function() {
       this._render();
     },
 
@@ -142,11 +149,11 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
       this.setupCamera();
       this.setupScene();
 
-      this.collection.fetch();
+      this.control = new Control({
+        renderer: this
+      });
 
-      // this.control = new Control({
-        // renderer: this
-      // });
+      this.collection.fetch();
 
       var _this = this;
       window.addEventListener('resize', function() {
