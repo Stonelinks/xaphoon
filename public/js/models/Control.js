@@ -39,7 +39,9 @@ var Control = Backbone.Model.extend({
       // col-major (elements - sanity check): [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 100, 101, 102, 1]
       // row-major (set - sanity check): [0, ]
 
-      drawable.set('matrix', elementsRowMajor);
+      drawable.set('matrix', elementsRowMajor, {
+        silent:true
+      });
       drawable.save();
     });
 
