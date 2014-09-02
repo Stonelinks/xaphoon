@@ -14,8 +14,9 @@
     "url": "https://github.com/Stonelinks/xaphoon/issues"
   },
   "dependencies": {
-    "lodash": "^2.4.1",
-    "omni": "git+https://github.com/Stonelinks/omni.git"
+    "backbone.io": "^0.4.1",
+    "finalhandler": "^0.1.0",
+    "serve-static": "^1.5.3"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

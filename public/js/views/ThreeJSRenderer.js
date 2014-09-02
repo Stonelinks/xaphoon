@@ -1,5 +1,9 @@
 var canvasID = '#canvas-anchor';
 
+var debug = function(m) {
+  console.log('ThreeJSRenderer: ' + m);
+};
+
 var ThreeJSRenderer = BaseRealtimeView.extend({
 
   template: '#renderer-template',
@@ -33,16 +37,17 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     },
 
     'click #add-box': function(e) {
-      Omni.trigger('drawable', {
+
+      window.sendFeedUpdate('added box');
+
+      var newDrawable = new Drawable({
         texture: '/img/crate.gif',
         geometryType: 'BoxGeometry',
         geometryParams: [200, 200, 200],
         matrixWorld: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
-      }, function(data) {
-        if (data.error != undefined) {
-          alert(data.error);
-        }
       });
+      window.drawables.add(newDrawable);
+      newDrawable.save();
 
       e.preventDefault();
       e.stopPropagation();
@@ -87,20 +92,20 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
   },
 
   addDrawable: function(drawable) {
-    window.sendFeedUpdate('add drawable ' + drawable.id);
+    debug('add drawable ' + drawable.id);
     var mesh = drawable.getMesh();
     this.scene.add(mesh);
     this._render();
   },
 
   removeDrawable: function(drawable) {
-    window.sendFeedUpdate('remove drawable ' + drawable.id);
+    debug('remove drawable ' + drawable.id);
     var mesh = drawable.getMesh();
     this.scene.remove(mesh);
     this._render();
   },
 
-  _collectionEvents: {
+  collectionEvents: {
     'add': function(drawable) {
       this.addDrawable(drawable);
       // this.control.attachDrawable(drawable);
@@ -132,12 +137,12 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
   control: undefined,
 
   initialize: function(options) {
-    BaseRealtimeView.prototype.initialize.apply(this, arguments);
-
     this.once('show', function() {
       this.setupRenderer();
       this.setupCamera();
       this.setupScene();
+
+      this.collection.fetch();
 
       // this.control = new Control({
         // renderer: this

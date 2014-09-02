@@ -56,4 +56,3 @@ var Control = Backbone.Model.extend({
     });
   }
 });
-

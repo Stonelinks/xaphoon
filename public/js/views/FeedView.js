@@ -1,29 +1,37 @@
-window.sendFeedUpdate = function(message) {
-    Omni.trigger('feed', {
-    message: message
-  }, function(data) {
+var getRandomColor = function() {
+  var letters = '0123456789ABC'.split('');
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.round(Math.random() * (letters.length - 1))];
+  }
+  return color;
+};
 
-    if (data.error != undefined) {
-      alert(data.error);
-    }
+var myColor = getRandomColor();
+
+window.sendFeedUpdate = function(message) {
+  var newFeedItem = new FeedItem({
+    message: message,
+    color: myColor
   });
+  window.feed.add(newFeedItem);
+  newFeedItem.save();
 };
 
 var FeedView = BaseRealtimeView.extend({
   template: '#feed-template',
 
-  logEvent: function(message, user) {
-    var user = user || {};
-    var name = user.name || undefined;
-    var color = user.color || 'black';
-    var t = _.template($('#feed-item-template').text());
-    this.$el.find('.feed').prepend(t({
-      name: name,
-      color: color,
-      message: message
-    }));
+  logEvent: function(message, color) {
+    if (message) {
+      var color = color || myColor;
+      var t = _.template($('#feed-item-template').text());
+      this.$el.find('.feed').prepend(t({
+        color: color,
+        message: message
+      }));
 
-    console.log((name === undefined ? '>> ' : name + ': ') + message);
+      console.log(color + ' >> ' + message);
+    }
   },
 
   events: {
@@ -42,21 +50,20 @@ var FeedView = BaseRealtimeView.extend({
     }
   },
 
-  updateOnline: function() {
-    this.logEvent(Omni.Collections.userCount.at(0).get('count') + ' people online');
+  collectionEvents: {
+    'add': function(feedItem) {
+      this.logEvent(feedItem.get('message'), feedItem.get('color'));
+    }
   },
 
-  _collectionEvents: {
-    'add': function(feedItem) {
-      this.logEvent(feedItem.get('message'), feedItem.get('user'));
-    }
+  sayHello: function() {
+    window.sendFeedUpdate('hello');
   },
 
   initialize: function(options) {
     BaseRealtimeView.prototype.initialize.apply(this, arguments);
     this.once('render', function() {
-      Omni.Collections.userCount.at(0).on('change:count', this.updateOnline.bind(this));
-      this.updateOnline();
+      this.sayHello();
     });
   }
 });

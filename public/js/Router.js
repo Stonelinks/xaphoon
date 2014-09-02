@@ -5,21 +5,19 @@ var Router = Backbone.Router.extend({
 
   index: function() {
 
-    var login = new LoginView();
-    window.xaphoon.login.show(login);
+    window.feed = new Feed();
 
-    window.xaphoon.once('login', function() {
-      var feedView = new FeedView({
-        _collection: Omni.Collections.feed
-      });
-      window.xaphoon.feed.show(feedView);
-
-      var _renderer = new ThreeJSRenderer({
-        _collection: Omni.Collections.drawables
-      });
-      window.xaphoon.renderer.show(_renderer);
-      // window._renderer = _renderer;
+    var feedView = new FeedView({
+      collection: feed
     });
+    window.xaphoon.feed.show(feedView);
+
+    window.drawables = new Drawables();
+    var xaphoonRenderer = new ThreeJSRenderer({
+      collection: drawables
+    });
+    window.xaphoon.renderer.show(xaphoonRenderer);
+    window._renderer = xaphoonRenderer;
   }
 });
 

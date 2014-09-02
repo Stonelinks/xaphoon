@@ -12,24 +12,43 @@ block append js
 
   //
     dependencies
-  script(src='/socket.io/socket.io.js')
   script(src='/vendor/jquery/dist/jquery.min.js')
   script(src='/vendor/underscore/underscore.js')
   script(src='/vendor/backbone/backbone.js')
-  script(src='/omni.js')
+
+  script(src='/socket.io/socket.io.js')
+  script(src='/socket.io/backbone.io.js')
+
   script(src='/vendor/marionette/lib/backbone.marionette.min.js')
+
   script(src='/vendor/threejs/build/three.min.js')
   script(src='http://threejs.org/examples/js/controls/TransformControls.js')
 
   //
     the app
   script(src='/js/app.js')
+
+  //
+    models
+  script(src='/js/models/BaseRealtimeModel.js')
+  script(src='/js/models/FeedItem.js')
   script(src='/js/models/Drawable.js')
   script(src='/js/models/Control.js')
+
+  //
+    collections
+  script(src='/js/collections/BaseRealtimeCollection.js')
+  script(src='/js/collections/Feed.js')
+  script(src='/js/collections/Drawables.js')
+  
+  //
+    views
   script(src='/js/views/BaseRealtimeView.js')
-  script(src='/js/views/ThreeJSRenderer.js')
   script(src='/js/views/FeedView.js')
-  script(src='/js/views/LoginView.js')
+  script(src='/js/views/ThreeJSRenderer.js')
+  
+  //
+    start the app
   script(src='/js/Router.js')
   script(src='/js/main.js')
 
@@ -46,7 +65,7 @@ block append body
     pre.feed
 
   script#feed-item-template(type='text/html')
-    | <strong style='color: <%= color %>; display: inline;'><%= name === undefined ? '>>' : name + ':' %> </strong><strong><%= message + '\n' %><strong>
+    | <strong style='color: <%= color %>; display: inline;'>>> </strong><strong><%= message + '\n' %><strong>
 
   script#renderer-template(type='text/html')
     nav.navbar.navbar-default

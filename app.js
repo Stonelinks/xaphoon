@@ -1,29 +1,38 @@
-var Omni = require('omni');
-var Users = require('./collections/Users');
-var Drawables = require('./collections/Drawables');
-var Feed = require('./collections/Feed');
+var finalhandler = require('finalhandler');
+var http = require('http');
+var static = require('serve-static');
+var backboneio = require('backbone.io');
 
-var users = new Users();
-var drawables = new Drawables();
-var feed = new Feed();
+// serve up public folder
+var serve = static('public', {
+  'index': ['index.html']
+});
 
-var collections = {
-  users: users,
-  feed: feed,
-  drawables: drawables,
-  userCount: new Omni.Collection([{id: 1, count: 0}])
-};
-
-var events = {
-  login: require('./events/login'),
-  feed: require('./events/feed'),
-  drawable: require('./events/drawable'),
-  disconnect: require('./events/disconnect'),
-  connect: require('./events/connect')
-};
+// create server
+var app = http.createServer(function(req, res) {
+  var done = finalhandler(req, res);
+  serve(req, res, done);
+});
 
 var port = process.env.PORT || 3000;
+app.listen(port);
 
-var server = Omni.listen(port, collections, events, {
-  development: true
+var backends = {};
+var collections = ['feed', 'drawables'];
+collections.forEach(function(collection) {
+  var backend = backboneio.createBackend();
+
+  backend.use(function(req, res, next) {
+    console.log(req.backend);
+    console.log(req.method);
+    console.log(JSON.stringify(req.model));
+    next();
+  });
+
+  backend.use(backboneio.middleware.memoryStore());
+
+  backends[collection] = backend;
 });
+
+backboneio.listen(app, backends);
+console.log('listening on port ' + port);
