@@ -21,16 +21,7 @@ var backends = {};
 var collections = ['feed', 'drawables'];
 collections.forEach(function(collection) {
   var backend = backboneio.createBackend();
-
-  backend.use(function(req, res, next) {
-    console.log(req.backend);
-    console.log(req.method);
-    console.log(JSON.stringify(req.model));
-    next();
-  });
-
   backend.use(backboneio.middleware.memoryStore());
-
   backends[collection] = backend;
 });
 
