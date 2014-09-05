@@ -58,7 +58,7 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
 
       var x = (e.clientX - rect.left) / rect.width;
       var y = (e.clientY - rect.top) / rect.height;
-      this.pointerVector.set((x) * 2 - 1, - (y) * 2 + 1, 0.5);
+      this.pointerVector.set((x) * 2.0 - 1.0, - (y) * 2.0 + 1.0, 0.5);
 
       this.projector.unprojectVector(this.pointerVector, this.camera);
       this.rayCaster.set(this.camera.position, this.pointerVector.sub(this.camera.position).normalize());
@@ -73,43 +73,21 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
         return mesh;
       }));
 
-      var raycastedDrawable
+      var raycastedDrawable;
       if (intersections[0]) {
          raycastedDrawable = _.findWhere(searchList, {
           mesh: intersections[0].object
         }).drawable;
       }
-      this.collection.trigger('raycast', raycastedDrawable)
-      raycastedDrawable.trigger('raycast', raycastedDrawable)
+
+      console.log(raycastedDrawable);
+      this.collection.trigger('raycast', raycastedDrawable);
+      if (raycastedDrawable) {
+        raycastedDrawable.trigger('raycast', raycastedDrawable);
+      }
 
       e.preventDefault();
       e.stopPropagation();
-    }
-  },
-
-  // TODO
-  onClick: function() {
-
-    var prevCamera = camera;
-
-    camera = new THREE.PerspectiveCamera();
-    camera.position.copy(prevCamera.position);
-    camera.rotation.copy(prevCamera.rotation);
-
-    var MODE = {
-      TRACKBALL: 0,
-      FLY: 1
-    };
-
-    switch (mode) {
-      case MODE.FLY:
-        controls = new THREE.TrackballControls(camera);
-        mode = MODE.TRACKBALL;
-        break;
-      case MODE.TRACKBALL:
-        controls = new THREE.FlyControls(camera);
-        mode = MODE.FLY;
-        break;
     }
   },
 
@@ -122,9 +100,7 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
   },
 
   camera: undefined,
-
   scene: undefined,
-
   renderer: undefined,
 
   setupRenderer: function() {
@@ -167,7 +143,11 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
   collectionEvents: {
     'add': function(drawable) {
       this.addDrawable(drawable);
-      this.transformControl.attachDrawable(drawable);
+
+      if (!this.transformControl) {
+        this.setupTransformControl();
+        this.transformControl.attachDrawable(drawable);
+      }
       this._render();
     },
 
@@ -190,6 +170,24 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
 
     'texture:loaded': function() {
       this._render();
+    },
+
+    'raycast': function(drawable) {
+
+      var prevCamera = this.camera;
+
+      camera = new THREE.PerspectiveCamera();
+      camera.position.copy(prevCamera.position);
+      camera.rotation.copy(prevCamera.rotation);
+
+      if (drawable) {
+        console.log(drawable);
+        this.transformControl.attachDrawable(drawable);
+      }
+      else {
+        // this.setupOrbitControl()
+      }
+      this._render();
     }
   },
 
@@ -202,20 +200,32 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
   },
 
   _render: function() {
+    if (this.transformControl) {
+      this.transformControl.getControl().update();
+    }
     this.renderer.render(this.scene, this.camera);
   },
 
-  control: undefined,
+  transformControl: undefined,
+  orbitControl: undefined,
+
+  setupTransformControl: function() {
+    this.transformControl = new TransformControl({
+      renderer: this
+    });
+  },
+
+  setupOrbitControl: function() {
+    this.orbitControl = new OrbitControl({
+      renderer: this
+    });
+  },
 
   initialize: function(options) {
     this.once('show', function() {
       this.setupRenderer();
       this.setupCamera();
       this.setupScene();
-
-      this.transformControl = new TransformControl({
-        renderer: this
-      });
 
       this.collection.fetch();
 
