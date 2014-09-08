@@ -609,20 +609,20 @@
 		var camPosition = new THREE.Vector3();
 		var camRotation = new THREE.Euler();
 
-		domElement.addEventListener('mousedown', onPointerDown, false);
-		domElement.addEventListener('touchstart', onPointerDown, false);
+		// domElement.addEventListener( "mousedown", onPointerDown, false );
+		// domElement.addEventListener( "touchstart", onPointerDown, false );
 
-		domElement.addEventListener('mousemove', onPointerHover, false);
-		domElement.addEventListener('touchmove', onPointerHover, false);
+		// domElement.addEventListener( "mousemove", onPointerHover, false );
+		// domElement.addEventListener( "touchmove", onPointerHover, false );
 
-		domElement.addEventListener('mousemove', onPointerMove, false);
-		domElement.addEventListener('touchmove', onPointerMove, false);
+		// domElement.addEventListener( "mousemove", onPointerMove, false );
+		// domElement.addEventListener( "touchmove", onPointerMove, false );
 
-		domElement.addEventListener('mouseup', onPointerUp, false);
-		domElement.addEventListener('mouseout', onPointerUp, false);
-		domElement.addEventListener('touchend', onPointerUp, false);
-		domElement.addEventListener('touchcancel', onPointerUp, false);
-		domElement.addEventListener('touchleave', onPointerUp, false);
+		// domElement.addEventListener( "mouseup", onPointerUp, false );
+		// domElement.addEventListener( "mouseout", onPointerUp, false );
+		// domElement.addEventListener( "touchend", onPointerUp, false );
+		// domElement.addEventListener( "touchcancel", onPointerUp, false );
+		// domElement.addEventListener( "touchleave", onPointerUp, false );
 
 		this.attach = function(object ) {
 
@@ -645,6 +645,13 @@
 			this.gizmo['translate'].hide();
 			this.gizmo['rotate'].hide();
 			this.gizmo['scale'].hide();
+
+		};
+
+		this.disable = function(object ) {
+
+			scope.object = undefined;
+			this.axis = undefined;
 
 		};
 
@@ -714,7 +721,7 @@
 
 		};
 
-		function onPointerHover(event ) {
+		this.onPointerHover = function(event ) {
 
 			if (scope.object === undefined || _dragging === true) return;
 
@@ -738,9 +745,9 @@
 
 			}
 
-		}
+		};
 
-		function onPointerDown(event ) {
+		this.onPointerDown = function(event ) {
 
 			if (scope.object === undefined || _dragging === true) return;
 
@@ -782,9 +789,9 @@
 
 			_dragging = true;
 
-		}
+		};
 
-		function onPointerMove(event ) {
+		this.onPointerMove = function(event ) {
 
 			if (scope.object === undefined || scope.axis === null || _dragging === false) return;
 
@@ -950,14 +957,14 @@
 			scope.update();
 			scope.dispatchEvent(changeEvent);
 
-		}
+		};
 
-		function onPointerUp(event ) {
+		this.onPointerUp = function(event ) {
 
 			_dragging = false;
-			onPointerHover(event);
+			scope.onPointerHover(event);
 
-		}
+		};
 
 		function intersectObjects(pointer, objects ) {
 

@@ -325,7 +325,7 @@ THREE.OrbitControls = function(object, domElement ) {
 
 	}
 
-	function onMouseDown(event ) {
+	this.onMouseDown = function(event ) {
 
 		if (scope.enabled === false) return;
 		event.preventDefault();
@@ -353,13 +353,13 @@ THREE.OrbitControls = function(object, domElement ) {
 
 		}
 
-		document.addEventListener('mousemove', onMouseMove, false);
-		document.addEventListener('mouseup', onMouseUp, false);
+		document.addEventListener('mousemove', scope.onMouseMove, false);
+		document.addEventListener('mouseup', scope.onMouseUp, false);
 		scope.dispatchEvent(startEvent);
 
-	}
+	};
 
-	function onMouseMove(event ) {
+	this.onMouseMove = function(event ) {
 
 		if (scope.enabled === false) return;
 
@@ -416,20 +416,20 @@ THREE.OrbitControls = function(object, domElement ) {
 
 		scope.update();
 
-	}
+	};
 
-	function onMouseUp(/* event */ ) {
+	this.onMouseUp = function(/* event */ ) {
 
 		if (scope.enabled === false) return;
 
-		document.removeEventListener('mousemove', onMouseMove, false);
-		document.removeEventListener('mouseup', onMouseUp, false);
+		document.removeEventListener('mousemove', scope.onMouseMove, false);
+		document.removeEventListener('mouseup', scope.onMouseUp, false);
 		scope.dispatchEvent(endEvent);
 		state = STATE.NONE;
 
-	}
+	};
 
-	function onMouseWheel(event ) {
+	this.onMouseWheel = function(event ) {
 
 		if (scope.enabled === false || scope.noZoom === true) return;
 
@@ -462,9 +462,9 @@ THREE.OrbitControls = function(object, domElement ) {
 		scope.dispatchEvent(startEvent);
 		scope.dispatchEvent(endEvent);
 
-	}
+	};
 
-	function onKeyDown(event ) {
+	this.onKeyDown = function(event ) {
 
 		if (scope.enabled === false || scope.noKeys === true || scope.noPan === true) return;
 
@@ -492,9 +492,9 @@ THREE.OrbitControls = function(object, domElement ) {
 
 		}
 
-	}
+	};
 
-	function touchstart(event ) {
+	this.touchstart = function(event ) {
 
 		if (scope.enabled === false) return;
 
@@ -538,9 +538,9 @@ THREE.OrbitControls = function(object, domElement ) {
 
 		scope.dispatchEvent(startEvent);
 
-	}
+	};
 
-	function touchmove(event ) {
+	this.touchmove = function(event ) {
 
 		if (scope.enabled === false) return;
 
@@ -617,27 +617,33 @@ THREE.OrbitControls = function(object, domElement ) {
 
 		}
 
-	}
+	};
 
-	function touchend(/* event */ ) {
+	this.touchend = function(/* event */ ) {
 
 		if (scope.enabled === false) return;
 
 		scope.dispatchEvent(endEvent);
 		state = STATE.NONE;
 
-	}
+	};
 
-	this.domElement.addEventListener('contextmenu', function(event ) { event.preventDefault(); }, false);
-	this.domElement.addEventListener('mousedown', onMouseDown, false);
-	this.domElement.addEventListener('mousewheel', onMouseWheel, false);
-	this.domElement.addEventListener('DOMMouseScroll', onMouseWheel, false); // firefox
+	this.onContextMenu = function(event ) {
 
-	this.domElement.addEventListener('touchstart', touchstart, false);
-	this.domElement.addEventListener('touchend', touchend, false);
-	this.domElement.addEventListener('touchmove', touchmove, false);
+		event.preventDefault();
 
-	window.addEventListener('keydown', onKeyDown, false);
+	};
+
+	// this.domElement.addEventListener( 'contextmenu', onContextMenu, false );
+	// this.domElement.addEventListener( 'mousedown', onMouseDown, false );
+	// this.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
+	// this.domElement.addEventListener( 'DOMMouseScroll', onMouseWheel, false ); // firefox
+
+	// this.domElement.addEventListener( 'touchstart', touchstart, false );
+	// this.domElement.addEventListener( 'touchend', touchend, false );
+	// this.domElement.addEventListener( 'touchmove', touchmove, false );
+
+	// window.addEventListener( 'keydown', onKeyDown, false );
 
 	// force an update at start
 	this.update();

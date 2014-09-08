@@ -38,7 +38,7 @@ var TransformControl = Backbone.Model.extend({
 
       // col-major (elements - sanity check): [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 100, 101, 102, 1]
       // row-major (set - sanity check): [0, ]
-      
+
       if (!_.isEqual(drawable.get('matrix'), elementsRowMajor)) {
         drawable.set('matrix', elementsRowMajor, {
           silent: true
@@ -48,33 +48,67 @@ var TransformControl = Backbone.Model.extend({
     });
 
     _this.renderer.scene.add(_this._control);
-    _this.renderer._render();
   },
 
   getControl: function() {
-    if (this._control === undefined) {
-      this.initializeControl();
-    }
     return this._control;
   },
 
+  getAttachedDrawable: function() {
+    return this.get('attachedDrawable');
+  },
+
   attachDrawable: function(drawable) {
-    if (this._control === undefined) {
-      this.initializeControl();
+    if (this.get('attachedDrawable') !== drawable) {
+      this.set('attachedDrawable', drawable);
+      this._control.attach(drawable.getMesh());
     }
-    this.set('attachedDrawable', drawable);
-    this._control.attach(drawable.getMesh());
+  },
+
+  detachDrawable: function(drawable) {
+    drawable = drawable || this.get('attachedDrawable');
+    this.set('attachedDrawable', undefined);
+    if (drawable) {
+      this._control.disable(drawable.getMesh());
+    }
+    else {
+      console.log('TransformControl: can\'t detach nonexistant drawable');
+    }
+  },
+
+  hasAttachedDrawable: function() {
+    return this.get('attachedDrawable');
+  },
+
+  dispatchDOMEvent: function(e) {
+    var eventMap = {
+      'mousedown': 'onPointerDown',
+      'touchstart': 'onPointerDown',
+
+      'mousemove': ['onPointerHover', 'onPointerMove'],
+      'touchmove': ['onPointerHover', 'onPointerMove'],
+
+      'mouseup': 'onPointerUp',
+      'mouseout': 'onPointerUp',
+      'touchend': 'onPointerUp',
+      'touchcancel': 'onPointerUp',
+      'touchleave': 'onPointerUp'
+    };
+
+    var _this = this;
+    var handlerNames = _.isArray(eventMap[e.type]) ? eventMap[e.type] : [eventMap[e.type]];
+    handlerNames.forEach(function(handlerName) {
+      _this._control[handlerName].call(_this._control, e);
+    });
   },
 
   renderer: undefined,
 
   initialize: function(options) {
     this.renderer = options.renderer;
+    this.initializeControl();
 
     this.on('change:mode', function() {
-      if (this._control === undefined) {
-        this.initializeControl();
-      }
       this._control.setMode(this.get('mode'));
     });
   }
