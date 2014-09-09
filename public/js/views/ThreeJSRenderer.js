@@ -25,7 +25,7 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
       this._render();
     },
 
-    'matrix:update': function() {
+    'change:matrix': function() {
       this._render();
     },
 
