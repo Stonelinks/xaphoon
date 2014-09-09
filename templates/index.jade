@@ -32,6 +32,7 @@ block append js
   script(src='/vendor/threejs/build/three.js')
   script(src='/js/controls/TransformControls.js')
   script(src='/js/controls/OrbitControls.js')
+  script(src='/js/loaders/ColladaLoader.js')
 
   //
     the app
@@ -103,6 +104,14 @@ block append body
             a#add-box(href='javascript:void(0)')
               span.glyphicon.glyphicon-plus
               |  Add box
+          li
+            a#add-torus(href='javascript:void(0)')
+              span.glyphicon.glyphicon-record
+              |  Add torus
+          li
+            a#add-robot(href='javascript:void(0)')
+              span.glyphicon.glyphicon-tower
+              |  Add robot
     #canvas-anchor
 
   script#login-template(type='text/html')

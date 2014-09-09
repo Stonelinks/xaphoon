@@ -15,11 +15,6 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
   },
 
   collectionEvents: {
-    'add': function(drawable) {
-      this.addDrawable(drawable);
-      this._render();
-    },
-
     'remove': function(drawable) {
       this.removeDrawable(drawable);
       this._render();
@@ -29,7 +24,9 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
       this._render();
     },
 
-    'texture:loaded': function() {
+    // this basically takes the place of the add event
+    'drawable:loaded': function(drawable) {
+      this.addDrawable(drawable);
       this._render();
     }
   },
@@ -80,23 +77,56 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
 
       window.sendFeedUpdate('added box');
 
-      var newDrawable = new Drawable({
+      this.createNewDrawable({
         texture: '/img/crate.gif',
         geometryType: 'BoxGeometry',
         geometryParams: [200, 200, 200]
       });
 
-      var _this = this;
-      this.collection.once('add', function(newDrawable) {
-        _this.transformControl.attachDrawable(newDrawable);
+      e.preventDefault();
+      e.stopPropagation();
+    },
+
+    'click #add-torus': function(e) {
+
+      window.sendFeedUpdate('added torus');
+
+      this.createNewDrawable({
+        texture: '/img/crate.gif',
+        geometryType: 'TorusGeometry',
+        geometryParams: [50, 20, 20, 20]
       });
 
-      this.collection.add(newDrawable);
-      newDrawable.save();
+      e.preventDefault();
+      e.stopPropagation();
+    },
+
+    'click #add-robot': function(e) {
+
+      window.sendFeedUpdate('added collada');
+
+      this.createNewDrawable({
+        // texture: '/img/crate.gif',
+        geometryType: 'collada',
+        geometryParams: ['/vendor/collada_robots/kawada-hironx.zae']
+      });
 
       e.preventDefault();
       e.stopPropagation();
     }
+  },
+
+  createNewDrawable: function(options) {
+
+    var newDrawable = new Drawable(options);
+
+    var _this = this;
+    this.collection.once('add', function(newDrawable) {
+      _this.transformControl.attachDrawable(newDrawable);
+    });
+
+    this.collection.add(newDrawable);
+    newDrawable.save();
   },
 
   _transformControlDragging: false,
@@ -198,16 +228,22 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
 
   addDrawable: function(drawable) {
     console.log('ThreeJSRenderer: add drawable');
+
+    // synchronously insert
     var mesh = drawable.getMesh();
-    this.scene.add(mesh);
-    this._render();
+    if (mesh) {
+      this.scene.add(mesh);
+      this._render();
+    }
   },
 
   removeDrawable: function(drawable) {
     console.log('ThreeJSRenderer: remove drawable');
     var mesh = drawable.getMesh();
-    this.scene.remove(mesh);
-    this._render();
+    if (mesh) {
+      this.scene.remove(mesh);
+      this._render();
+    }
   },
 
   onWindowResize: function() {

@@ -20,6 +20,7 @@
     "html5shiv": "~3.7.2",
     "respond": "~1.4.2",
     "marionette": "~2.1.0",
-    "backbone": "~1.1.2"
+    "backbone": "~1.1.2",
+    "collada_robots": "https://github.com/rdiankov/collada_robots.git"
   }
 }

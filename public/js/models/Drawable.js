@@ -24,30 +24,44 @@ var Drawable = BaseRealtimeModel.extend({
   initDrawable: function() {
     var _this = this;
 
-    this._texture = THREE.ImageUtils.loadTexture(this.get('texture'), new THREE.UVMapping(), function() {
+    var _loaded = function() {
       if (_this.collection !== undefined) {
-        _this.collection.trigger('texture:loaded');
+        _this.collection.trigger('drawable:loaded', _this);
       }
-    });
+      _this.trigger('drawable:loaded', _this);
 
-    this._texture.anisotropy = window._renderer.renderer.getMaxAnisotropy();
+      _this.on('change:matrix', function() {
+        console.log('Drawable: update mesh');
+        _this.updateMesh();
+      });
+      _this.updateMesh();
+    };
 
-    this._geometry = construct(THREE[this.get('geometryType')], this.get('geometryParams'));
+    if (this.get('geometryType') !== 'collada') {
 
-    this._material = new THREE.MeshLambertMaterial({
-      map: this._texture
-    });
+      this._texture = THREE.ImageUtils.loadTexture(this.get('texture'), new THREE.UVMapping(), _loaded);
 
-    this._mesh = new THREE.Mesh(this._geometry, this._material);
+      this._texture.anisotropy = window._renderer.renderer.getMaxAnisotropy();
 
-    this.on('change:matrix', function() {
-      if (_this.collection !== undefined) {
-        _this.collection.trigger('matrix:update');
-      }
-      console.log('Drawable: update mesh');
-      this.updateMesh();
-    });
-    this.updateMesh();
+      this._geometry = construct(THREE[this.get('geometryType')], this.get('geometryParams'));
+
+      this._material = new THREE.MeshLambertMaterial({
+        map: this._texture
+      });
+
+      this._mesh = new THREE.Mesh(this._geometry, this._material);
+    }
+    else {
+
+      var loader = new THREE.ColladaLoader();
+      loader.options.convertUpAxis = true;
+      loader.load(this.get('geometryParams')[0], function(collada) {
+        _this._mesh.updateMatrix();
+        _this._mesh = collada.scene;
+
+        _loaded();
+      });
+    }
   },
 
   updateMesh: function() {
@@ -56,9 +70,11 @@ var Drawable = BaseRealtimeModel.extend({
   },
 
   getMesh: function() {
-    if (this._mesh === undefined) {
-      this.initDrawable();
-    }
     return this._mesh;
+  },
+
+  initialize: function(options) {
+    BaseRealtimeModel.prototype.initialize.apply(this, options);
+    this.initDrawable();
   }
 });
