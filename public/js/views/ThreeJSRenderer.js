@@ -26,28 +26,33 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
 
   events: {
     'click #feed-toggle': function(e) {
-      e.preventDefault();
       var _this = this;
       setTimeout(function() {
         _this.onWindowResize();
       }, 1100);
       $('#wrapper').toggleClass('toggled');
+
+      e.preventDefault();
+      e.stopPropagation();
     },
 
     'click #translate-mode': function(e) {
       this.transformControl.set('mode', 'translate');
+
       e.preventDefault();
       e.stopPropagation();
     },
 
     'click #rotate-mode': function(e) {
       this.transformControl.set('mode', 'rotate');
+
       e.preventDefault();
       e.stopPropagation();
     },
 
     'click #scale-mode': function(e) {
       this.transformControl.set('mode', 'scale');
+
       e.preventDefault();
       e.stopPropagation();
     },
@@ -64,9 +69,6 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
 
       var _this = this;
       this.collection.on('add', function(newDrawable) {
-        if (!_this.transformControl) {
-          _this.setupTransformControl();
-        }
         _this.transformControl.attachDrawable(newDrawable);
       });
 
@@ -78,111 +80,61 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     }
   },
 
-  _dragging: false,
+  _transformControlDragging: false,
 
   onPointerDown: function(e) {
-    this.dispatchControlDOMEvent(this.transformControl, e);
-    return;
-
-    e.stopPropagation();
-    e.preventDefault();
-
-    if (this._dragging) {
-      return;
-    }
-
-    console.log('mouse down');
-
-    // if mouse down on transform control gizmos, delegate event
-
-    // else if mouse down on drawable, set flag to attach transform controls on mouse up
-
-    // var searchList = this.collection.map(function(model) {
-      // return {
-        // drawable: model,
-        // mesh: model.getMesh()
-      // };
-    // });
-//
-    // this._raycast({
-      // event: e,
-      // callback: function(intersections) {
-//
-        // var raycastedDrawable;
-        // if (intersections[0]) {
-           // raycastedDrawable = _.findWhere(searchList, {
-            // mesh: intersections[0].object
-          // }).drawable;
-        // }
-//
-        // console.log(raycastedDrawable);
-//
-        // if (raycastedDrawable) {
-          // this.enableTransformControl()
-          // this.transformControl.attachDrawable(raycastedDrawable);
-          // this._render();
-        // }
-        // else {
-          // this.setupOrbitControl();
-        // }
-      // }
-    // });
-
-    this._dragging = true;
+    this.dispatchDOMEventToControls(e);
   },
 
   onPointerHover: function(e) {
-    this.dispatchControlDOMEvent(this.transformControl, e);
-    return;
-
-    e.stopPropagation();
-    e.preventDefault();
-    if (this._dragging) {
-      return;
-    }
+    this.dispatchDOMEventToControls(e);
   },
 
   onPointerMove: function(e) {
-    this.dispatchControlDOMEvent(this.transformControl, e);
-    return;
-
-    e.stopPropagation();
-    e.preventDefault();
-
-    if (!this._dragging) {
-      return;
-    }
+    this.dispatchDOMEventToControls(e);
   },
 
   onPointerUp: function(e) {
-    this.dispatchControlDOMEvent(this.transformControl, e);
-    return;
+    this.dispatchDOMEventToControls(e);
 
-    e.stopPropagation();
-    e.preventDefault();
-    this._dragging = false;
-    this.onPointerHover(e);
+    if (!this._transformControlDragging) {
+      var searchList = this.collection.map(function(model) {
+        return {
+          drawable: model,
+          mesh: model.getMesh()
+        };
+      });
+
+      this._raycast({
+        event: e,
+        callback: function(intersections) {
+
+          var raycastedDrawable;
+          if (intersections[0]) {
+             raycastedDrawable = _.findWhere(searchList, {
+              mesh: intersections[0].object
+            }).drawable;
+          }
+
+          if (raycastedDrawable) {
+            this.transformControl.attachDrawable(raycastedDrawable);
+            this._render();
+          }
+        }
+      });
+    }
   },
 
   onMouseWheel: function(e) {
-    this.dispatchControlDOMEvent(this.transformControl, e);
-    return;
-
-    debugger;
+    this.dispatchDOMEventToControls(e);
   },
 
   onKeyDown: function(e) {
-    this.dispatchControlDOMEvent(this.transformControl, e);
-    return;
-
-    debugger;
+    this.dispatchDOMEventToControls(e);
   },
 
   onContextMenu: function(e) {
-    this.dispatchControlDOMEvent(this.transformControl, e);
-    return;
-
-    debugger;
+    this.dispatchDOMEventToControls(e);
   },
 
   getWidth: function() {
@@ -243,9 +195,7 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
   },
 
   _render: function() {
-    if (this.transformControl) {
-      this.transformControl.getControl().update();
-    }
+    this.transformControl.getControl().update();
     this.renderer.render(this.scene, this.camera);
   },
 
@@ -279,13 +229,10 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     callback.call(this, intersections);
   },
 
-  controlMode: undefined, // either 'orbit' or 'transform'
-
   transformControl: undefined,
-  tmpTransformControlDrawable: undefined,
   orbitControl: undefined,
 
-  enableTransformControl: function() {
+  setupTransformControl: function() {
 
     // reuse the same transformControl instance
     if (!this.transformControl) {
@@ -293,31 +240,15 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
         renderer: this
       });
     }
-
-    // try to reattach previous drawable
-    if (this.tmpTransformControlDrawable) {
-      this.transformControl.attachDrawable(this.tmpTransformControlDrawable);
-      this.tmpTransformControlDrawable = undefined;
-    }
   },
 
   disableTransformControl: function() {
     if (this.transformControl && this.transformControl.hasAttachedDrawable()) {
-      this.tmpTransformControlDrawable = this.transformControl.getAttachedDrawable();
       this.transformControl.detachDrawable();
     }
   },
 
-  setupTransformControl: function() {
-    console.log('setupTransformControl');
-    if (this.controlMode != 'transform') {
-      // this.disableOrbitControl();
-      this.enableTransformControl();
-      this.controlMode = 'transform';
-    }
-  },
-
-  enableOrbitControl: function() {
+  setupOrbitControl: function() {
 
     // reuse the same orbitControl instance
     if (!this.orbitControl) {
@@ -333,15 +264,6 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
   disableOrbitControl: function() {
     if (this.orbitControl && this.orbitControl.isEnabled()) {
       this.orbitControl.disable();
-    }
-  },
-
-  setupOrbitControl: function() {
-    console.log('setupOrbitControl');
-    if (this.controlMode != 'orbit') {
-      // this.disableTransformControl()
-      this.enableOrbitControl();
-      this.controlMode = 'orbit';
     }
   },
 
@@ -373,15 +295,24 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
       var handlerNames = _.isArray(handlerName) ? handlerName : [handlerName];
       handlerNames.forEach(function(handlerName) {
         domElement.addEventListener(eventName, _this[handlerName].bind(_this), false);
-        // domElement.addEventListener(eventName, function(e) {
-          // console.log(e.type === eventName)
-        // }, false)
       });
     });
   },
 
-  dispatchControlDOMEvent: function(control, e) {
-    control.dispatchDOMEvent(e);
+  dispatchDOMEventToControls: function(e) {
+
+    // only dispatch to orbit control if not intersecting transform control
+    if (!this.transformControl.intersectsControl(e)) {
+      this.orbitControl.dispatchDOMEvent(e);
+    }
+
+    if (this.transformControl) {
+      this._transformControlDragging = this.transformControl.isDragging();
+      this.transformControl.dispatchDOMEvent(e);
+    }
+    else {
+      this._transformControlDragging = false;
+    }
   },
 
   initialize: function(options) {
@@ -392,8 +323,8 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
 
       this.setupPointerEvents();
 
-      // this.setupOrbitControl();
       this.setupTransformControl();
+      this.setupOrbitControl();
 
       this.collection.fetch();
 

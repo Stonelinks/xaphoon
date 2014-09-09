@@ -80,26 +80,48 @@ var TransformControl = Backbone.Model.extend({
     return this.get('attachedDrawable');
   },
 
+  controlEventMap: {
+    'mousedown': 'onPointerDown',
+    'touchstart': 'onPointerDown',
+
+    'mousemove': ['onPointerHover', 'onPointerMove'],
+    'touchmove': ['onPointerHover', 'onPointerMove'],
+
+    'mouseup': 'onPointerUp',
+    'mouseout': 'onPointerUp',
+    'touchend': 'onPointerUp',
+    'touchcancel': 'onPointerUp',
+    'touchleave': 'onPointerUp'
+  },
+
   dispatchDOMEvent: function(e) {
-    var eventMap = {
-      'mousedown': 'onPointerDown',
-      'touchstart': 'onPointerDown',
-
-      'mousemove': ['onPointerHover', 'onPointerMove'],
-      'touchmove': ['onPointerHover', 'onPointerMove'],
-
-      'mouseup': 'onPointerUp',
-      'mouseout': 'onPointerUp',
-      'touchend': 'onPointerUp',
-      'touchcancel': 'onPointerUp',
-      'touchleave': 'onPointerUp'
-    };
-
     var _this = this;
-    var handlerNames = _.isArray(eventMap[e.type]) ? eventMap[e.type] : [eventMap[e.type]];
+    var handlers = this.controlEventMap[e.type];
+    var handlerNames = _.isArray(handlers) ? handlers : [handlers];
     handlerNames.forEach(function(handlerName) {
       _this._control[handlerName].call(_this._control, e);
     });
+  },
+
+  intersectsControl: function(e) {
+    var _this = this;
+    var handlers = this.controlEventMap[e.type];
+    var handlerNames = _.isArray(handlers) ? handlers : [handlers];
+    var ret;
+    handlerNames.forEach(function(handlerName, i) {
+      var intersects = _this._control.eventIntersectsControl(handlerName, e);
+      if (i == 0) {
+        ret = intersects;
+      }
+      else {
+        ret = ret || intersects;
+      }
+    });
+    return ret;
+  },
+
+  isDragging: function() {
+    return this._control.isDragging();
   },
 
   renderer: undefined,

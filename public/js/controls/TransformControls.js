@@ -981,6 +981,81 @@
 
 		}
 
+		this.isDragging = function() {
+
+			return !(scope.object === undefined || scope.axis === null || _dragging === false);
+
+		};
+
+		// figure out if an event will intersect a control for a particular callback
+		this.eventIntersectsControl = function(callbackName, event ) {
+
+			var pointer = event.changedTouches ? event.changedTouches[0] : event;
+
+			var eventMap = {
+
+				onPointerHover: function(event ) {
+
+					if (scope.object === undefined || _dragging === true) return false;
+
+					var intersect = intersectObjects(pointer, scope.gizmo[_mode].pickers.children);
+
+					return intersect;
+
+				},
+
+				onPointerDown: function(event ) {
+
+					if (scope.object === undefined || _dragging === true) return false;
+
+					if (pointer.button === 0 || pointer.button === undefined) {
+
+						var intersect = intersectObjects(pointer, scope.gizmo[_mode].pickers.children);
+
+						if (intersect) {
+
+							scope.axis = intersect.object.name;
+
+							scope.update();
+
+							eye.copy(camPosition).sub(worldPosition).normalize();
+
+							scope.gizmo[_mode].setActivePlane(scope.axis, eye);
+
+							var planeIntersect = intersectObjects(pointer, [scope.gizmo[_mode].activePlane]);
+
+							return planeIntersect;
+
+						} else {
+
+							return false;
+
+						}
+
+					} else {
+
+						return false;
+
+					}
+
+				},
+
+				onPointerMove: function(event ) {
+
+					if (scope.object === undefined || scope.axis === null || _dragging === false) return false;
+
+					var planeIntersect = intersectObjects(pointer, [scope.gizmo[_mode].activePlane]);
+
+					return planeIntersect;
+
+				}
+
+			};
+
+			return eventMap[callbackName] && eventMap[callbackName](event);
+
+		};
+
 	};
 
 	THREE.TransformControls.prototype = Object.create(THREE.Object3D.prototype);
