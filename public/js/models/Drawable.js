@@ -56,9 +56,10 @@ var Drawable = BaseRealtimeModel.extend({
       var loader = new THREE.ColladaLoader();
       loader.options.convertUpAxis = true;
       loader.load(this.get('geometryParams')[0], function(collada) {
-        _this._mesh.updateMatrix();
-        _this._mesh = collada.scene;
-
+        var dae = collada.scene;
+        dae.scale.x = dae.scale.y = dae.scale.z = 0.0002;
+        dae.updateMatrix();
+        _this._mesh = dae;
         _loaded();
       });
     }

@@ -108,7 +108,8 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
       this.createNewDrawable({
         // texture: '/img/crate.gif',
         geometryType: 'collada',
-        geometryParams: ['/vendor/collada_robots/kawada-hironx.zae']
+        // geometryParams: ['/vendor/collada_robots/kawada-hironx.zae']
+        geometryParams: ['/models/monster.dae']
       });
 
       e.preventDefault();
