@@ -97,6 +97,10 @@ block append body
               span.glyphicon.glyphicon-resize-full
               |  Scale
           li
+            a#toggle-space(href='javascript:void(0)')
+              | <span class="glyphicon glyphicon-<%= transformControlSpace == 'Local' ? 'adjust' : 'globe' %>"></span>
+              |  <%= capitalise(transformControlSpace) %> space
+          li
             a#add-box(href='javascript:void(0)')
               span.glyphicon.glyphicon-plus
               |  Add box

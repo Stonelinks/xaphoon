@@ -1,8 +1,10 @@
 var TransformControl = Backbone.Model.extend({
 
   defaults: {
+    attachedDrawable: undefined,
+
     mode: 'translate', // translate, rotate or scale
-    attachedDrawable: undefined
+    space: 'local' // local or world
   },
 
   _control: undefined,
@@ -99,7 +101,9 @@ var TransformControl = Backbone.Model.extend({
     var handlers = this.controlEventMap[e.type];
     var handlerNames = _.isArray(handlers) ? handlers : [handlers];
     handlerNames.forEach(function(handlerName) {
-      _this._control[handlerName].call(_this._control, e);
+      if (_this._control[handlerName]) {
+        _this._control[handlerName].call(_this._control, e);
+      }
     });
   },
 
@@ -132,6 +136,10 @@ var TransformControl = Backbone.Model.extend({
 
     this.on('change:mode', function() {
       this._control.setMode(this.get('mode'));
+    });
+
+    this.on('change:space', function() {
+      this._control.setSpace(this.get('space'));
     });
   }
 });

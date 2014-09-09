@@ -1,8 +1,18 @@
 var canvasID = '#canvas-anchor';
 
+var capitalise = function(string) {
+  return string && string.charAt(0).toUpperCase() + string.slice(1);
+};
+
 var ThreeJSRenderer = BaseRealtimeView.extend({
 
   template: '#renderer-template',
+
+  templateHelpers: function() {
+    return {
+      transformControlSpace: this.transformControl && capitalise(this.transformControl.get('space'))
+    };
+  },
 
   collectionEvents: {
     'add': function(drawable) {
@@ -57,6 +67,15 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
       e.stopPropagation();
     },
 
+    'click #toggle-space': function(e) {
+      var newSpace = this.transformControl.get('space') == 'local' ? 'world' : 'local';
+      this.transformControl.set('space', newSpace);
+      this.render();
+
+      e.preventDefault();
+      e.stopPropagation();
+    },
+
     'click #add-box': function(e) {
 
       window.sendFeedUpdate('added box');
@@ -68,7 +87,7 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
       });
 
       var _this = this;
-      this.collection.on('add', function(newDrawable) {
+      this.collection.once('add', function(newDrawable) {
         _this.transformControl.attachDrawable(newDrawable);
       });
 
@@ -154,7 +173,12 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     this.renderer.sortObjects = false;
     this.renderer.setSize(this.getWidth(), this.getHeight());
 
-    this.$el.find(canvasID).append(this.renderer.domElement);
+    var _this = this;
+    var _setRendererDOMElement = function() {
+      _this.$el.find(canvasID).append(_this.renderer.domElement);
+    };
+    _setRendererDOMElement();
+    this.on('render', _setRendererDOMElement);
   },
 
   setupCamera: function() {
@@ -334,6 +358,7 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
       }, false);
 
       _this._render();
+      _this.render();
     });
   }
 });
