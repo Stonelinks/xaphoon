@@ -28,6 +28,12 @@ block append js
   script(src='/vendor/marionette/lib/backbone.marionette.min.js')
   
   //
+    misc
+  script(src='/vendor/bootstrap/dist/js/bootstrap.min.js')
+  script(src='/vendor/zip/WebContent/zip.js')
+  script(src='/vendor/zip/WebContent/zip-ext.js')
+  
+  //
     threejs
   script(src='/vendor/threejs/build/three.js')
   script(src='/js/controls/TransformControls.js')
@@ -109,9 +115,18 @@ block append body
               span.glyphicon.glyphicon-record
               |  Add torus
           li
-            a#add-robot(href='javascript:void(0)')
+            a#add-monster(href='javascript:void(0)')
               span.glyphicon.glyphicon-tower
-              |  Add robot
+              |  Add monster
+          li.dropdown
+            a.dropdown-toggle(href='javascript:void(0)', data-toggle='dropdown')
+                span.caret
+                |  Add robot
+              ul.dropdown-menu
+                each robot in ['barrett-hand.zae', 'barrett-wam4.zae', 'barrett-wamhand.zae', 'barrett-wam.zae', 'care-o-bot3.zae', 'cmu-permma.zae', 'crustcrawler-ax12.zae', 'darpa-arm.zae', 'exactdynamics-manusarmleft.zae', 'kawada-hironx.zae', 'kuka-kr150.zae', 'kuka-kr210l180.zae', 'kuka-kr30l16.zae', 'kuka-kr360.zae', 'kuka-kr3-cr.zae', 'kuka-kr5-r650.zae', 'kuka-kr5-r850.zae', 'kuka-youbot-hires.zae', 'kuka-youbot.zae', 'mitsubishi-pa10.zae', 'neuronics-katana.zae', 'romela-darwin-op.zae', 'schunk-lwa3.zae', 'schunk-sdh.zae', 'shadow-hand.zae', 'unimation-pumaarm.zae', 'universalrobots-ur6-85-5-a.zae', 'weldinggun.zae', 'willowgarage-pr2.zae', 'zange.zae']
+                  li
+                    a(href='javascript:void(0)', class="load-robot", data-robot=robot) !{robot.split('.')[0]}
+
     #canvas-anchor
 
   script#login-template(type='text/html')

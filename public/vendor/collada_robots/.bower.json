@@ -3,12 +3,10 @@
   "homepage": "https://github.com/rdiankov/collada_robots",
   "_release": "98c0760b8c",
   "_resolution": {
-    "type": "branch",
-    "branch": "master",
-    "commit": "98c0760b8cdff9c4cd754752184421f21ff19946"
+    "type": "commit",
+    "commit": "98c0760b8c"
   },
   "_source": "https://github.com/rdiankov/collada_robots.git",
-  "_target": "*",
-  "_originalSource": "https://github.com/rdiankov/collada_robots.git",
-  "_direct": true
+  "_target": "98c0760b8c",
+  "_originalSource": "https://github.com/rdiankov/collada_robots.git"
 }

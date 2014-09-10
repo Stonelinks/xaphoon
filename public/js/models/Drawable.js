@@ -8,6 +8,9 @@ var construct = function(constructor, args) {
   return new f();
 };
 
+zip.workerScriptsPath = '/vendor/zip/WebContent/';
+URL = window.webkitURL || window.mozURL || window.URL;
+
 var Drawable = BaseRealtimeModel.extend({
   defaults: {
     texture: '/img/crate.gif',
@@ -37,32 +40,66 @@ var Drawable = BaseRealtimeModel.extend({
       _this.updateMesh();
     };
 
-    if (this.get('geometryType') !== 'collada') {
+    var _loadCollada = function(url, scale, loaderFunc) {
+      scale = scale || 1.0;
 
+      var loader = new THREE.ColladaLoader();
+      loader.options.convertUpAxis = true;
+      loader.load(url, function(collada) {
+        var dae = collada.scene;
+
+        _this._mesh = dae;
+
+        _loaded();
+
+        dae.scale.x = dae.scale.y = dae.scale.z = scale;
+        dae.updateMatrix();
+
+        // not good...
+        window._renderer._render();
+      });
+    };
+
+    if (THREE.hasOwnProperty(this.get('geometryType'))) {
       this._texture = THREE.ImageUtils.loadTexture(this.get('texture'), new THREE.UVMapping(), _loaded);
-
       this._texture.anisotropy = window._renderer.renderer.getMaxAnisotropy();
-
       this._geometry = construct(THREE[this.get('geometryType')], this.get('geometryParams'));
-
       this._material = new THREE.MeshLambertMaterial({
         map: this._texture
       });
 
       this._mesh = new THREE.Mesh(this._geometry, this._material);
     }
-    else {
+    else if (this.get('geometryType') == 'collada') {
+      _loadCollada(this.get('geometryParams')[0], this.get('geometryParams')[1]);
+    }
+    else if (this.get('geometryType') == 'collada_zae') {
+      var zaeUrl = this.get('geometryParams')[0];
 
-      // load collada
-      var loader = new THREE.ColladaLoader();
-      loader.options.convertUpAxis = true;
-      loader.load(this.get('geometryParams')[0], function(collada) {
-        var dae = collada.scene;
-        _this._mesh = dae;
-        _loaded();
-        dae.scale.x = dae.scale.y = dae.scale.z = 0.1;
-        dae.updateMatrix();
+      zip.createReader(new zip.HttpReader(zaeUrl), function(zipReader) {
+        zipReader.getEntries(function(entries) {
+
+          var hasLoadedCollada = false;
+
+          if (entries.length) {
+            _.forEach(entries, function(entry) {
+              if (!hasLoadedCollada && entry.filename.split('.').pop() == 'dae') {
+                entry.getData(new zip.BlobWriter('text/plain'), function(data) {
+                  zipReader.close();
+                  _loadCollada(URL.createObjectURL(data), _this.get('geometryParams')[1]);
+                  hasLoadedCollada = true;
+                });
+              }
+            });
+          }
+          // _loadCollada(this.get('geometryParams')[0], this.get('geometryParams')[1])
+        });
+      }, function() {
+        console.warn('Drawable: problem loading ' + zaeUrl);
       });
+    }
+    else {
+      console.warn('Drawable: no compatible geometry mesh');
     }
   },
 

@@ -38,43 +38,27 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
         _this.onWindowResize();
       }, 1100);
       $('#wrapper').toggleClass('toggled');
-
-      e.preventDefault();
-      e.stopPropagation();
     },
 
     'click #translate-mode': function(e) {
       this.transformControl.set('mode', 'translate');
-
-      e.preventDefault();
-      e.stopPropagation();
     },
 
     'click #rotate-mode': function(e) {
       this.transformControl.set('mode', 'rotate');
-
-      e.preventDefault();
-      e.stopPropagation();
     },
 
     'click #scale-mode': function(e) {
       this.transformControl.set('mode', 'scale');
-
-      e.preventDefault();
-      e.stopPropagation();
     },
 
     'click #toggle-space': function(e) {
       var newSpace = this.transformControl.get('space') == 'local' ? 'world' : 'local';
       this.transformControl.set('space', newSpace);
       this.render();
-
-      e.preventDefault();
-      e.stopPropagation();
     },
 
     'click #add-box': function(e) {
-
       window.sendFeedUpdate('added box');
 
       this.createNewDrawable({
@@ -82,13 +66,9 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
         geometryType: 'BoxGeometry',
         geometryParams: [200, 200, 200]
       });
-
-      e.preventDefault();
-      e.stopPropagation();
     },
 
     'click #add-torus': function(e) {
-
       window.sendFeedUpdate('added torus');
 
       this.createNewDrawable({
@@ -96,23 +76,27 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
         geometryType: 'TorusGeometry',
         geometryParams: [50, 20, 20, 20]
       });
-
-      e.preventDefault();
-      e.stopPropagation();
     },
 
-    'click #add-robot': function(e) {
-
-      window.sendFeedUpdate('added collada');
+    'click #add-monster': function(e) {
+      window.sendFeedUpdate('added monster');
 
       this.createNewDrawable({
         geometryType: 'collada',
         // geometryParams: ['/vendor/collada_robots/kawada-hironx.zae']
-        geometryParams: ['/models/monster.dae']
+        geometryParams: ['/models/monster.dae', 0.1]
       });
+    },
 
-      e.preventDefault();
-      e.stopPropagation();
+    'click .load-robot': function(e) {
+      var $target = $(e.currentTarget);
+      window.sendFeedUpdate('added ' + $target.text());
+      var robotUrl = '/vendor/collada_robots/' + $target.data('robot');
+
+      this.createNewDrawable({
+        geometryType: 'collada_zae',
+        geometryParams: [robotUrl, 500.0]
+      });
     }
   },
 
@@ -149,17 +133,21 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     if (!this._transformControlDragging) {
       var searchList = [];
       this.collection.forEach(function(model) {
-        var meshes = [];
-        var _getMesh = function(baseMesh) {
-          meshes.push(baseMesh);
-        };
-        model.getMesh().traverse(_getMesh);
-        meshes.forEach(function(mesh) {
-          searchList.push({
-            drawable: model,
-            mesh: mesh
+        var baseMesh = model.getMesh();
+        if (baseMesh) {
+          var meshes = [];
+          baseMesh.traverse(function(mesh) {
+            if (mesh) {
+              meshes.push(mesh);
+            }
           });
-        });
+          meshes.forEach(function(mesh) {
+            searchList.push({
+              drawable: model,
+              mesh: mesh
+            });
+          });
+        }
       });
 
       this._raycast({
@@ -282,9 +270,17 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
       return;
     }
 
-    var meshes = options.meshes || this.collection.map(function(model) {
-      return model.getMesh();
-    });
+    var meshes = [];
+    if (!options.meshes) {
+      this.collection.forEach(function(model) {
+        if (model.getMesh()) {
+          meshes.push(model.getMesh());
+        }
+      });
+    }
+    else {
+      meshes = options.meshes;
+    }
 
     var rect = this.renderer.domElement.getBoundingClientRect();
 
