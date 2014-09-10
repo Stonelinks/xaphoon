@@ -13,7 +13,7 @@ var Drawable = BaseRealtimeModel.extend({
     texture: '/img/crate.gif',
     geometryType: 'BoxGeometry',
     geometryParams: [200, 200, 200],
-    matrix: [1, 0, 0, 100, 0, 1, 0, 101, 0, 0, 1, 102, 0, 0, 0, 1]
+    matrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
   },
 
   _mesh: undefined,
@@ -58,10 +58,10 @@ var Drawable = BaseRealtimeModel.extend({
       loader.options.convertUpAxis = true;
       loader.load(this.get('geometryParams')[0], function(collada) {
         var dae = collada.scene;
-        dae.scale.x = dae.scale.y = dae.scale.z = 0.01;
-        dae.updateMatrix();
         _this._mesh = dae;
         _loaded();
+        dae.scale.x = dae.scale.y = dae.scale.z = 0.1;
+        dae.updateMatrix();
       });
     }
   },
