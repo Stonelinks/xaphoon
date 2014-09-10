@@ -106,7 +106,6 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
       window.sendFeedUpdate('added collada');
 
       this.createNewDrawable({
-        // texture: '/img/crate.gif',
         geometryType: 'collada',
         // geometryParams: ['/vendor/collada_robots/kawada-hironx.zae']
         geometryParams: ['/models/monster.dae']
@@ -122,7 +121,7 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     var newDrawable = new Drawable(options);
 
     var _this = this;
-    this.collection.once('add', function(newDrawable) {
+    this.collection.once('drawable:loaded', function(newDrawable) {
       _this.transformControl.attachDrawable(newDrawable);
     });
 
@@ -148,11 +147,19 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     this.dispatchDOMEventToControls(e);
 
     if (!this._transformControlDragging) {
-      var searchList = this.collection.map(function(model) {
-        return {
-          drawable: model,
-          mesh: model.getMesh()
+      var searchList = [];
+      this.collection.forEach(function(model) {
+        var meshes = [];
+        var _getMesh = function(baseMesh) {
+          meshes.push(baseMesh);
         };
+        model.getMesh().traverse(_getMesh);
+        meshes.forEach(function(mesh) {
+          searchList.push({
+            drawable: model,
+            mesh: mesh
+          });
+        });
       });
 
       this._raycast({
@@ -222,6 +229,9 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     this.scene = new THREE.Scene();
     this.scene.add(new THREE.GridHelper(500, 100));
 
+    var ambient = new THREE.AmbientLight(0x888888);
+    this.scene.add(ambient);
+
     var light = new THREE.DirectionalLight(0xffffff, 2);
     light.position.set(1, 1, 1);
     this.scene.add(light);
@@ -285,7 +295,7 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     this.projector.unprojectVector(this.pointerVector, this.camera);
     this.rayCaster.set(this.camera.position, this.pointerVector.sub(this.camera.position).normalize());
 
-    var intersections = this.rayCaster.intersectObjects(meshes);
+    var intersections = this.rayCaster.intersectObjects(meshes, true);
 
     callback.call(this, intersections);
   },
