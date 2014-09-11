@@ -70,7 +70,6 @@ THREE.ColladaLoader = function() {
 
 					if (request.status == 0 || request.status == 200) {
 
-
 						if (request.responseXML) {
 
 							readyCallbackFunc = readyCallback;
@@ -183,9 +182,10 @@ THREE.ColladaLoader = function() {
 				controllers: controllers,
 				animations: animations,
 				visualScenes: visualScenes,
-				kinematicsScenes: kinematicsScenes,
 				visualScene: visualScene,
-				scene: visualScene
+				scene: visualScene,
+				kinematicsScenes: kinematicsScenes,
+				kinematicsScene: kinematicsScene
 			}
 
 		};
@@ -691,7 +691,7 @@ THREE.ColladaLoader = function() {
 
 		var animationBounds = calcAnimationBounds();
 		var skeleton = visualScene.getChildById(instanceCtrl.skeleton[0], true) ||
-					   visualScene.getChildBySid(instanceCtrl.skeleton[0], true);
+					visualScene.getChildBySid(instanceCtrl.skeleton[0], true);
 
 		//flatten the skeleton into a list of bones
 		var bonelist = flattenSkeleton(skeleton);
@@ -979,7 +979,6 @@ THREE.ColladaLoader = function() {
 
 				if (skinController !== undefined) {
 
-
 					applySkin(geom, skinController);
 
 					if (geom.morphTargets.length > 0) {
@@ -994,16 +993,12 @@ THREE.ColladaLoader = function() {
 
 					}
 
-
 					mesh = new THREE.SkinnedMesh(geom, material, false);
-
 
 					//mesh.skeleton = skinController.skeleton;
 					//mesh.skinController = controllers[ skinController.url ];
 					//mesh.skinInstanceController = skinController;
 					mesh.name = 'skin_' + skins.length;
-
-
 
 					//mesh.animationHandle.setKey(0);
 					skins.push(mesh);
@@ -1137,17 +1132,17 @@ THREE.ColladaLoader = function() {
 
 	function getLibraryNode(id ) {
 
-        var nodes = COLLADA.querySelectorAll('library_nodes node');
+		var nodes = COLLADA.querySelectorAll('library_nodes node');
 
-        for (var i = 0; i < nodes.length; i++) {
+		for (var i = 0; i < nodes.length; i++) {
 
-            var attObj = nodes[i].attributes.getNamedItem('id');
-            if (attObj && attObj.value === id) {
-                return nodes[i];
-        }
-        }
+			var attObj = nodes[i].attributes.getNamedItem('id');
+			if (attObj && attObj.value === id) {
+				return nodes[i];
+			}
+		}
 
-        return undefined;
+		return undefined;
 
 	};
 
@@ -1849,7 +1844,7 @@ THREE.ColladaLoader = function() {
 
 	};
 
-	function VisualScene() {
+	function ColladaScene() {
 
 		this.id = '';
 		this.name = '';
@@ -1857,7 +1852,7 @@ THREE.ColladaLoader = function() {
 
 	};
 
-	VisualScene.prototype.getChildById = function(id, recursive ) {
+	ColladaScene.prototype.getChildById = function(id, recursive ) {
 
 		for (var i = 0; i < this.nodes.length; i++) {
 
@@ -1875,7 +1870,7 @@ THREE.ColladaLoader = function() {
 
 	};
 
-	VisualScene.prototype.getChildBySid = function(sid, recursive ) {
+	ColladaScene.prototype.getChildBySid = function(sid, recursive ) {
 
 		for (var i = 0; i < this.nodes.length; i++) {
 
@@ -1893,7 +1888,7 @@ THREE.ColladaLoader = function() {
 
 	};
 
-	VisualScene.prototype.parse = function(element ) {
+	ColladaScene.prototype.parse = function(element ) {
 
 		this.id = element.getAttribute('id');
 		this.name = element.getAttribute('name');
@@ -1922,13 +1917,21 @@ THREE.ColladaLoader = function() {
 
 	};
 
-	function KinematicsScene() {
+	function VisualScene() {
 
-		VisualScene.call(this);
+		ColladaScene.call(this);
 
 	};
 
-	KinematicsScene.prototype = Object.create(VisualScene.prototype);
+	VisualScene.prototype = Object.create(ColladaScene.prototype);
+
+	function KinematicsScene() {
+
+		ColladaScene.call(this);
+
+	};
+
+	KinematicsScene.prototype = Object.create(ColladaScene.prototype);
 
 	KinematicsScene.prototype.parse = function(element ) {
 
@@ -2447,7 +2450,6 @@ THREE.ColladaLoader = function() {
 
 					}
 
-
 					break;
 
 				case 'extra':
@@ -2685,7 +2687,6 @@ THREE.ColladaLoader = function() {
 					vcount = p.length / maxOffset;
 
 				}
-
 
 				for (j = 0; j < vcount; j++) {
 

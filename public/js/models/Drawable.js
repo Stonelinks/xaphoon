@@ -48,7 +48,8 @@ var Drawable = BaseRealtimeModel.extend({
       loader.load(url, function(collada) {
         var dae = collada.scene;
 
-        debugger;
+        console.log(collada);
+        console.log(collada.dae.kinematicsScene);
 
         _this._mesh = dae;
 
