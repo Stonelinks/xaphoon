@@ -48,6 +48,8 @@ var Drawable = BaseRealtimeModel.extend({
       loader.load(url, function(collada) {
         var dae = collada.scene;
 
+        debugger;
+
         _this._mesh = dae;
 
         _loaded();
@@ -55,7 +57,7 @@ var Drawable = BaseRealtimeModel.extend({
         dae.scale.x = dae.scale.y = dae.scale.z = scale;
         dae.updateMatrix();
 
-        // not good...
+        // kinda ghetto...
         window._renderer._render();
       });
     };
