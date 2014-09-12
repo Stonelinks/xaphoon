@@ -295,7 +295,7 @@ THREE.ColladaLoader = function() {
 
 	function parseKinematicsModel() {
 
-		var kinematicsModelElement = COLLADA.querySelectorAll('scene instance_visual_scene')[0];
+		var kinematicsModelElement = COLLADA.querySelectorAll('instance_kinematics_model')[0];
 
 		if (kinematicsModelElement) {
 
@@ -1851,7 +1851,7 @@ THREE.ColladaLoader = function() {
 
 	};
 
-	function ColladaScene() {
+	function VisualScene() {
 
 		this.id = '';
 		this.name = '';
@@ -1859,7 +1859,7 @@ THREE.ColladaLoader = function() {
 
 	};
 
-	ColladaScene.prototype.getChildById = function(id, recursive ) {
+	VisualScene.prototype.getChildById = function(id, recursive ) {
 
 		for (var i = 0; i < this.nodes.length; i++) {
 
@@ -1877,7 +1877,7 @@ THREE.ColladaLoader = function() {
 
 	};
 
-	ColladaScene.prototype.getChildBySid = function(sid, recursive ) {
+	VisualScene.prototype.getChildBySid = function(sid, recursive ) {
 
 		for (var i = 0; i < this.nodes.length; i++) {
 
@@ -1895,9 +1895,7 @@ THREE.ColladaLoader = function() {
 
 	};
 
-	ColladaScene.prototype.parse = function(element ) {
-
-		debugger;
+	VisualScene.prototype.parse = function(element ) {
 
 		this.id = element.getAttribute('id');
 		this.name = element.getAttribute('name');
@@ -1921,32 +1919,6 @@ THREE.ColladaLoader = function() {
 			}
 
 		}
-
-		return this;
-
-	};
-
-	function VisualScene() {
-
-		ColladaScene.call(this);
-
-	};
-
-	VisualScene.prototype = Object.create(ColladaScene.prototype);
-
-	function KinematicsModel() {
-
-		ColladaScene.call(this);
-
-	};
-
-	KinematicsModel.prototype = Object.create(ColladaScene.prototype);
-
-	KinematicsModel.prototype.parse = function(element ) {
-
-		var r = ColladaScene.prototype.parse.call(this, element);
-
-		debugger;
 
 		return this;
 
@@ -4595,6 +4567,196 @@ THREE.ColladaLoader = function() {
 
 	};
 
+	function KinematicsModel() {
+
+		this.id = '';
+		this.name = '';
+		this.joints = [];
+		this.links = [];
+
+	};
+
+	KinematicsModel.prototype.parse = function(element ) {
+
+		this.id = element.getAttribute('id');
+		this.name = element.getAttribute('name');
+		this.joints = [];
+		this.links = [];
+
+		for (var i = 0; i < element.childNodes.length; i++) {
+
+			var child = element.childNodes[i];
+			if (child.nodeType != 1) continue;
+
+			switch (child.nodeName) {
+
+				case 'technique_common':
+
+					this.parseCommon(child);
+					break;
+
+				default:
+					break;
+
+			}
+
+		}
+
+		return this;
+
+	};
+
+	KinematicsModel.prototype.parseCommon = function(element ) {
+
+		for (var i = 0; i < element.childNodes.length; i++) {
+
+			var child = element.childNodes[i];
+			if (child.nodeType != 1) continue;
+
+			switch (element.childNodes[i].nodeName) {
+
+				case 'joint':
+					this.joints.push((new Joint()).parse(child));
+					break;
+
+				case 'link':
+					this.links.push((new Link()).parse(child));
+					break;
+
+				default:
+					break;
+
+			}
+
+		}
+
+		return this;
+
+	};
+
+	function Joint() {
+
+		this.sid = '';
+		this.name = '';
+		this.axis = new THREE.Vector3();
+		this.limits = {
+			min: 0,
+			max: 0
+		};
+
+	};
+
+	Joint.prototype.parse = function(element ) {
+
+		this.sid = element.getAttribute('sid');
+		this.name = element.getAttribute('name');
+		this.axis = new THREE.Vector3();
+		this.limits = {
+			min: 0,
+			max: 0
+		};
+
+		var axisElement = element.querySelector('axis');
+		var _axis = _floats(axisElement.textContent);
+		this.axis = new THREE.Vector3(_axis[0], _axis[1], _axis[2]);
+		this.limits = {
+			min: parseFloat(element.querySelector('limits min').textContent),
+			max: parseFloat(element.querySelector('limits max').textContent)
+		};
+
+		return this;
+
+	};
+
+	function Link() {
+
+		this.sid = '';
+		this.name = '';
+		this.transforms = [];
+		this.attachments = [];
+
+	};
+
+	Link.prototype.parse = function(element ) {
+
+		this.sid = element.getAttribute('sid');
+		this.name = element.getAttribute('name');
+		this.transforms = [];
+		this.attachments = [];
+
+		for (var i = 0; i < element.childNodes.length; i++) {
+
+			var child = element.childNodes[i];
+			if (child.nodeType != 1) continue;
+
+			switch (child.nodeName) {
+
+				case 'attachment_full':
+					this.attachments.push((new Attachment()).parse(child));
+					break;
+
+				case 'rotate':
+				case 'translate':
+				case 'matrix':
+
+					this.transforms.push((new Transform()).parse(child));
+					break;
+
+				default:
+
+					break;
+
+			}
+
+		}
+
+		return this;
+
+	};
+
+	function Attachment() {
+
+		this.joint = '';
+		this.transforms = [];
+		this.links = [];
+
+	};
+
+	Attachment.prototype.parse = function(element ) {
+
+		this.joint = element.getAttribute('joint').split('/').pop();
+		this.links = [];
+
+		for (var i = 0; i < element.childNodes.length; i++) {
+
+			var child = element.childNodes[i];
+			if (child.nodeType != 1) continue;
+
+			switch (child.nodeName) {
+
+				case 'link':
+					this.links.push((new Link()).parse(child));
+					break;
+
+				case 'rotate':
+				case 'translate':
+				case 'matrix':
+
+					this.transforms.push((new Transform()).parse(child));
+					break;
+
+				default:
+
+					break;
+
+			}
+
+		}
+
+		return this;
+
+	};
+
 	function _source(element ) {
 
 		var id = element.getAttribute('id');
@@ -4608,7 +4770,7 @@ THREE.ColladaLoader = function() {
 		sources[id] = (new Source(id)).parse(element);
 		return sources[id];
 
-	};
+	}
 
 	function _nsResolver(nsPrefix ) {
 
@@ -4620,7 +4782,7 @@ THREE.ColladaLoader = function() {
 
 		return null;
 
-	};
+	}
 
 	function _bools(str ) {
 
@@ -4635,7 +4797,7 @@ THREE.ColladaLoader = function() {
 
 		return data;
 
-	};
+	}
 
 	function _floats(str ) {
 
@@ -4650,7 +4812,7 @@ THREE.ColladaLoader = function() {
 
 		return data;
 
-	};
+	}
 
 	function _ints(str ) {
 
@@ -4665,19 +4827,19 @@ THREE.ColladaLoader = function() {
 
 		return data;
 
-	};
+	}
 
 	function _strings(str ) {
 
 		return (str.length > 0) ? _trimString(str).split(/\s+/) : [];
 
-	};
+	}
 
 	function _trimString(str ) {
 
 		return str.replace(/^\s+/, '').replace(/\s+$/, '');
 
-	};
+	}
 
 	function _attr_as_float(element, name, defaultValue ) {
 
@@ -4691,7 +4853,7 @@ THREE.ColladaLoader = function() {
 
 		}
 
-	};
+	}
 
 	function _attr_as_int(element, name, defaultValue ) {
 
@@ -4705,7 +4867,7 @@ THREE.ColladaLoader = function() {
 
 		}
 
-	};
+	}
 
 	function _attr_as_string(element, name, defaultValue ) {
 
@@ -4719,7 +4881,7 @@ THREE.ColladaLoader = function() {
 
 		}
 
-	};
+	}
 
 	function _format_float(f, num ) {
 
@@ -4750,7 +4912,7 @@ THREE.ColladaLoader = function() {
 
 		return parts.join('.');
 
-	};
+	}
 
 	function extractDoubleSided(obj, element ) {
 
@@ -4768,7 +4930,7 @@ THREE.ColladaLoader = function() {
 
 		}
 
-	};
+	}
 
 	// Up axis conversion
 
@@ -4801,7 +4963,7 @@ THREE.ColladaLoader = function() {
 
 		}
 
-	};
+	}
 
 	function fixCoords(data, sign ) {
 
@@ -4859,7 +5021,7 @@ THREE.ColladaLoader = function() {
 
 		}
 
-	};
+	}
 
 	function getConvertedTranslation(axis, data ) {
 
@@ -4884,7 +5046,7 @@ THREE.ColladaLoader = function() {
 		}
 
 		return data;
-	};
+	}
 
 	function getConvertedVec3(data, offset ) {
 
@@ -4892,7 +5054,7 @@ THREE.ColladaLoader = function() {
 		fixCoords(arr, -1);
 		return new THREE.Vector3(arr[0], arr[1], arr[2]);
 
-	};
+	}
 
 	function getConvertedMat4(data ) {
 
@@ -4949,7 +5111,7 @@ THREE.ColladaLoader = function() {
 			data[12], data[13], data[14], data[15]
 			);
 
-	};
+	}
 
 	function getConvertedIndex(index ) {
 
@@ -4965,7 +5127,7 @@ THREE.ColladaLoader = function() {
 
 		return index;
 
-	};
+	}
 
 	function getConvertedMember(member ) {
 
@@ -5041,7 +5203,7 @@ THREE.ColladaLoader = function() {
 
 		return member;
 
-	};
+	}
 
 	return {
 
