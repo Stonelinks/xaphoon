@@ -23,7 +23,7 @@ THREE.ColladaLoader = function() {
 	var lights = {};
 
 	var animData;
-	var kinData;
+	var kinematicsFunctions;
 	var visualScenes;
 	var kinematicsModels;
 	var baseUrl;
@@ -171,7 +171,7 @@ THREE.ColladaLoader = function() {
 			morphs: morphs,
 			skins: skins,
 			animations: animData,
-			kinematics: kinData,
+			kinematics: kinematicsFunctions,
 			dae: {
 				images: images,
 				materials: materials,
@@ -825,7 +825,60 @@ THREE.ColladaLoader = function() {
 
 	function createKinematics() {
 
-		kinData = [];
+		var element = COLLADA.querySelector('scene instance_kinematics_scene');
+
+		var jointMap = {};
+
+		var _addToMap = function(jointIndex, axis, visualID) {
+			scene.traverse(function(node) {
+				if (node.id == visualID) {
+					jointMap[jointIndex] = {
+						node: node,
+						axis: axis,
+						joint: kinematicsModel.joints[jointIndex]
+					};
+				}
+			});
+		};
+
+		kinematicsFunctions = {
+			set: function(jointIndex, value) {
+				var jointData = jointMap[jointIndex];
+				var node = jointData.node;
+				var joint = jointData.joint;
+				var axis = joint.axis;
+				if (value > joint.limits.max || value < joint.limits.min) {
+					console.log('set joint' + jointIndex + ': value outside of limits: min: ' + joint.limits.min + ' max: ' + joint.limits.max);
+				}
+				else {
+					var valueRadians = value * Math.PI / 180.0;
+					node.setRotationFromAxisAngle(axis, valueRadians);
+				}
+			}
+		};
+
+		for (var i = 0; i < element.childNodes.length; i++) {
+
+			var child = element.childNodes[i];
+			if (child.nodeType != 1) continue;
+
+			switch (child.nodeName) {
+				case 'bind_joint_axis':
+					var visualTarget = child.getAttribute('target').split('/').pop();
+					var axis = child.querySelector('axis param').textContent;
+					var jointIndex = parseInt(axis.split('joint').pop().split('.')[0]);
+					var parentVisualNode = COLLADA.querySelector('[sid="' + visualTarget + '"]').parentElement;
+					_addToMap(jointIndex, axis, parentVisualNode.getAttribute('id'));
+
+					break;
+
+				default:
+
+					break;
+
+			}
+
+		}
 
 	}
 
@@ -4643,7 +4696,11 @@ THREE.ColladaLoader = function() {
 			min: 0,
 			max: 0
 		};
-
+		this.positions = {
+			inital: 0.0, // initial position in collada file
+			zero: 0.0, // not sure how to set this? just going to copy from collada
+			middle: 0.0 // min + max / 2.0
+		};
 	};
 
 	Joint.prototype.parse = function(element ) {
@@ -4655,15 +4712,21 @@ THREE.ColladaLoader = function() {
 			min: 0,
 			max: 0
 		};
+		this.positions = {
+			inital: 0.0, // initial position in collada file
+			zero: 0.0, // not sure how to set this? just going to copy from collada
+			middle: 0.0 // min + max / 2.0
+		};
 
 		var axisElement = element.querySelector('axis');
 		var _axis = _floats(axisElement.textContent);
-		this.axis = new THREE.Vector3(_axis[0], _axis[1], _axis[2]);
+		this.axis = getConvertedVec3(_axis, 0);
+		// this.axis = new THREE.Vector3(_axis[0], _axis[1], _axis[2]);
 		this.limits = {
 			min: parseFloat(element.querySelector('limits min').textContent),
 			max: parseFloat(element.querySelector('limits max').textContent)
 		};
-
+		this.positions.middle = (this.limits.min + this.limits.max) / 2.0;
 		return this;
 
 	};
