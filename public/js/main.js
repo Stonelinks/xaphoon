@@ -7,12 +7,15 @@ $(document).ready(function() {
   }, 2000);
 
   var angle = undefined;
-  var jointIndex = 1;
+  var jointIndex = 0;
   setInterval(function() {
     if (drawables.at(0) && drawables.at(0).kinematics) {
       var kinematics = drawables.at(0).kinematics;
       var joint = kinematics.joints[jointIndex];
-      if (angle === undefined) {
+      if (jointIndex > kinematics.joints.length) {
+        return;
+      }
+      else if (angle === undefined) {
         angle = joint.limits.min;
       }
       else if (angle >= joint.limits.max) {

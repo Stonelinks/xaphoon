@@ -829,12 +829,16 @@ THREE.ColladaLoader = function() {
 
 		var jointMap = {};
 
-		var _addToMap = function(jointIndex, axis, visualID) {
+		var _addToMap = function(jointIndex, axis, parentVisualElement) {
+			var parentVisualElementId = parentVisualElement.getAttribute('id');
+			var colladaNode = visualScene.getChildById(parentVisualElementId, true);
 			scene.traverse(function(node) {
-				if (node.id == visualID) {
+				if (node.id == parentVisualElementId) {
 					jointMap[jointIndex] = {
 						node: node,
 						axis: axis,
+						transforms: colladaNode.transforms,
+						colladaNode: colladaNode,
 						joint: kinematicsModel.joints[jointIndex]
 					};
 				}
@@ -844,15 +848,67 @@ THREE.ColladaLoader = function() {
 		kinematicsFunctions = {
 			set: function(jointIndex, value) {
 				var jointData = jointMap[jointIndex];
-				var node = jointData.node;
 				var joint = jointData.joint;
-				var axis = joint.axis;
 				if (value > joint.limits.max || value < joint.limits.min) {
 					console.log('set joint' + jointIndex + ': value outside of limits: min: ' + joint.limits.min + ' max: ' + joint.limits.max);
 				}
 				else {
-					var valueRadians = value * Math.PI / 180.0;
-					node.setRotationFromAxisAngle(axis, valueRadians);
+
+					var threejsNode = jointData.node;
+					var axis = joint.axis;
+					var transforms = jointData.transforms;
+
+
+					var matrix = new THREE.Matrix4();
+
+					for (i = 0; i < transforms.length; i++) {
+
+						var transform = transforms[i];
+
+						// really ghetto
+						if (transform.sid && transform.sid.indexOf('joint' + jointIndex) !== -1) {
+
+							// apply joint value here
+							matrix.multiply(m1.makeRotationAxis(axis, THREE.Math.degToRad(value)));
+						}
+						else {
+
+							var m1 = new THREE.Matrix4();
+
+							switch (transform.type) {
+
+								case 'matrix':
+
+									matrix.multiply(transform.obj);
+
+									break;
+
+								case 'translate':
+
+									matrix.multiply(m1.makeTranslation(transform.obj.x, transform.obj.y, transform.obj.z));
+
+									break;
+
+								case 'rotate':
+
+									matrix.multiply(m1.makeRotationAxis(transform.obj, transform.angle));
+
+									break;
+
+							}
+						}
+					}
+
+					var elementsFloat32Arr = matrix.elements;
+					var elements = Array.prototype.slice.call(elementsFloat32Arr);
+					var e = elements;
+
+					var elementsRowMajor = [e[0], e[4], e[8], e[12], e[1], e[5], e[9], e[13], e[2], e[6], e[10], e[14], e[3], e[7], e[11], e[15]];
+
+					threejsNode.matrix.set.apply(threejsNode.matrix, elementsRowMajor);
+					threejsNode.matrix.decompose(threejsNode.position, threejsNode.quaternion, threejsNode.scale);
+
+					// threejsNode.setRotationFromAxisAngle(axis, THREE.Math.degToRad(value));
 				}
 			}
 		};
@@ -867,8 +923,8 @@ THREE.ColladaLoader = function() {
 					var visualTarget = child.getAttribute('target').split('/').pop();
 					var axis = child.querySelector('axis param').textContent;
 					var jointIndex = parseInt(axis.split('joint').pop().split('.')[0]);
-					var parentVisualNode = COLLADA.querySelector('[sid="' + visualTarget + '"]').parentElement;
-					_addToMap(jointIndex, axis, parentVisualNode.getAttribute('id'));
+					var parentVisualElement = COLLADA.querySelector('[sid="' + visualTarget + '"]').parentElement;
+					_addToMap(jointIndex, axis, parentVisualElement);
 
 					break;
 
