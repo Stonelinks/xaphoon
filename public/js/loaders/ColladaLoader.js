@@ -23,7 +23,7 @@ THREE.ColladaLoader = function() {
 	var lights = {};
 
 	var animData;
-	var kinematicsFunctions;
+	var kinematics;
 	var visualScenes;
 	var kinematicsModels;
 	var baseUrl;
@@ -171,7 +171,7 @@ THREE.ColladaLoader = function() {
 			morphs: morphs,
 			skins: skins,
 			animations: animData,
-			kinematics: kinematicsFunctions,
+			kinematics: kinematics,
 			dae: {
 				images: images,
 				materials: materials,
@@ -190,12 +190,12 @@ THREE.ColladaLoader = function() {
 
 		};
 
-		scene.traverse(function(o) {
-			console.log({
-				id: o.id,
-				name: o.name
-			});
-		});
+		// scene.traverse(function(o) {
+			// console.log({
+				// id: o.id,
+				// name: o.name
+			// });
+		// });
 
 		if (callBack) {
 
@@ -740,7 +740,7 @@ THREE.ColladaLoader = function() {
 
 		// move vertices to bind shape
 		for (i = 0; i < geometry.vertices.length; i++) {
-					geometry.vertices[i].applyMatrix4(skinController.skin.bindShapeMatrix);
+			geometry.vertices[i].applyMatrix4(skinController.skin.bindShapeMatrix);
 		}
 
 		var skinIndices = [];
@@ -825,118 +825,165 @@ THREE.ColladaLoader = function() {
 
 	function createKinematics() {
 
-		var element = COLLADA.querySelector('scene instance_kinematics_scene');
-
 		var jointMap = {};
 
 		var _addToMap = function(jointIndex, axis, parentVisualElement) {
+
 			var parentVisualElementId = parentVisualElement.getAttribute('id');
 			var colladaNode = visualScene.getChildById(parentVisualElementId, true);
+			var joint = kinematicsModel.joints[jointIndex];
+
 			scene.traverse(function(node) {
+
 				if (node.id == parentVisualElementId) {
+
 					jointMap[jointIndex] = {
 						node: node,
 						axis: axis,
 						transforms: colladaNode.transforms,
-						colladaNode: colladaNode,
-						joint: kinematicsModel.joints[jointIndex]
+						joint: joint,
+						position: joint.zeroPosition
 					};
+
 				}
+
 			});
+
 		};
 
-		kinematicsFunctions = {
-			set: function(jointIndex, value) {
+		kinematics = {
+
+			joints: kinematicsModel.joints,
+
+			getDOF: function(jointIndex) {
+
 				var jointData = jointMap[jointIndex];
-				var joint = jointData.joint;
-				if (value > joint.limits.max || value < joint.limits.min) {
-					console.log('set joint' + jointIndex + ': value outside of limits: min: ' + joint.limits.min + ' max: ' + joint.limits.max);
+
+				if (jointData) {
+
+					return jointData.position;
+
+				} else {
+
+					console.log('getDOF: joint ' + jointIndex + ' doesn\'t exist');
+
+				}
+
+			},
+
+			setDOF: function(jointIndex, value) {
+
+				var jointData = jointMap[jointIndex];
+
+				if (jointData) {
+
+					var joint = jointData.joint;
+
+					if (value > joint.limits.max || value < joint.limits.min) {
+
+						console.log('setDOF: joint ' + jointIndex + ' value ' + value + ' outside of limits (min: ' + joint.limits.min + ', max: ' + joint.limits.max + ')');
+
+					} else {
+
+						var threejsNode = jointData.node;
+						var axis = joint.axis;
+						var transforms = jointData.transforms;
+
+						var matrix = new THREE.Matrix4();
+
+						for (i = 0; i < transforms.length; i++) {
+
+							var transform = transforms[i];
+
+							// really ghetto joint detection
+							if (transform.sid && transform.sid.indexOf('joint' + jointIndex) !== -1) {
+
+								// apply joint value here
+								matrix.multiply(m1.makeRotationAxis(axis, THREE.Math.degToRad(value)));
+
+							} else {
+
+								var m1 = new THREE.Matrix4();
+
+								switch (transform.type) {
+
+									case 'matrix':
+
+										matrix.multiply(transform.obj);
+
+										break;
+
+									case 'translate':
+
+										matrix.multiply(m1.makeTranslation(transform.obj.x, transform.obj.y, transform.obj.z));
+
+										break;
+
+									case 'rotate':
+
+										matrix.multiply(m1.makeRotationAxis(transform.obj, transform.angle));
+
+										break;
+
+								}
+							}
+						}
+
+						var elementsFloat32Arr = matrix.elements;
+						var elements = Array.prototype.slice.call(elementsFloat32Arr);
+						var e = elements;
+
+						var elementsRowMajor = [e[0], e[4], e[8], e[12], e[1], e[5], e[9], e[13], e[2], e[6], e[10], e[14], e[3], e[7], e[11], e[15]];
+
+						threejsNode.matrix.set.apply(threejsNode.matrix, elementsRowMajor);
+						threejsNode.matrix.decompose(threejsNode.position, threejsNode.quaternion, threejsNode.scale);
+					}
 				}
 				else {
 
-					var threejsNode = jointData.node;
-					var axis = joint.axis;
-					var transforms = jointData.transforms;
+					console.log('setDOF: joint ' + jointIndex + ' doesn\'t exist');
 
-
-					var matrix = new THREE.Matrix4();
-
-					for (i = 0; i < transforms.length; i++) {
-
-						var transform = transforms[i];
-
-						// really ghetto
-						if (transform.sid && transform.sid.indexOf('joint' + jointIndex) !== -1) {
-
-							// apply joint value here
-							matrix.multiply(m1.makeRotationAxis(axis, THREE.Math.degToRad(value)));
-						}
-						else {
-
-							var m1 = new THREE.Matrix4();
-
-							switch (transform.type) {
-
-								case 'matrix':
-
-									matrix.multiply(transform.obj);
-
-									break;
-
-								case 'translate':
-
-									matrix.multiply(m1.makeTranslation(transform.obj.x, transform.obj.y, transform.obj.z));
-
-									break;
-
-								case 'rotate':
-
-									matrix.multiply(m1.makeRotationAxis(transform.obj, transform.angle));
-
-									break;
-
-							}
-						}
-					}
-
-					var elementsFloat32Arr = matrix.elements;
-					var elements = Array.prototype.slice.call(elementsFloat32Arr);
-					var e = elements;
-
-					var elementsRowMajor = [e[0], e[4], e[8], e[12], e[1], e[5], e[9], e[13], e[2], e[6], e[10], e[14], e[3], e[7], e[11], e[15]];
-
-					threejsNode.matrix.set.apply(threejsNode.matrix, elementsRowMajor);
-					threejsNode.matrix.decompose(threejsNode.position, threejsNode.quaternion, threejsNode.scale);
-
-					// threejsNode.setRotationFromAxisAngle(axis, THREE.Math.degToRad(value));
 				}
+
 			}
+
 		};
 
-		for (var i = 0; i < element.childNodes.length; i++) {
+		var element = COLLADA.querySelector('scene instance_kinematics_scene');
 
-			var child = element.childNodes[i];
-			if (child.nodeType != 1) continue;
+		if (element) {
 
-			switch (child.nodeName) {
-				case 'bind_joint_axis':
-					var visualTarget = child.getAttribute('target').split('/').pop();
-					var axis = child.querySelector('axis param').textContent;
-					var jointIndex = parseInt(axis.split('joint').pop().split('.')[0]);
-					var parentVisualElement = COLLADA.querySelector('[sid="' + visualTarget + '"]').parentElement;
-					_addToMap(jointIndex, axis, parentVisualElement);
+			for (var i = 0; i < element.childNodes.length; i++) {
 
-					break;
+				var child = element.childNodes[i];
+				if (child.nodeType != 1) continue;
 
-				default:
+				switch (child.nodeName) {
 
-					break;
+					case 'bind_joint_axis':
+
+						var visualTarget = child.getAttribute('target').split('/').pop();
+						var axis = child.querySelector('axis param').textContent;
+						var jointIndex = parseInt(axis.split('joint').pop().split('.')[0]);
+						var visualTargetElement = COLLADA.querySelector('[sid="' + visualTarget + '"]');
+
+						if (visualTargetElement) {
+							var parentVisualElement = visualTargetElement.parentElement;
+							_addToMap(jointIndex, axis, parentVisualElement);
+						}
+
+						break;
+
+					default:
+
+						break;
+
+				}
 
 			}
-
 		}
 
-	}
+	};
 
 	function createSceneGraph(node, parent ) {
 
@@ -1230,7 +1277,7 @@ THREE.ColladaLoader = function() {
 
 		return obj;
 
-	};
+	}
 
 	function getJointId(skin, id ) {
 
@@ -1244,7 +1291,7 @@ THREE.ColladaLoader = function() {
 
 		}
 
-	};
+	}
 
 	function getLibraryNode(id ) {
 
@@ -1260,7 +1307,7 @@ THREE.ColladaLoader = function() {
 
 		return undefined;
 
-	};
+	}
 
 	function getChannelsForNode(node ) {
 
@@ -1301,7 +1348,7 @@ THREE.ColladaLoader = function() {
 
 		return channels;
 
-	};
+	}
 
 	function calcFrameDuration(node ) {
 
@@ -1322,7 +1369,7 @@ THREE.ColladaLoader = function() {
 
 		return minT;
 
-	};
+	}
 
 	function calcMatrixAt(node, t ) {
 
@@ -1391,7 +1438,7 @@ THREE.ColladaLoader = function() {
 
 		return matrix;
 
-	};
+	}
 
 	function bakeAnimations(node ) {
 
@@ -1483,7 +1530,7 @@ THREE.ColladaLoader = function() {
 
 		}
 
-	};
+	}
 
 	function findKey(keys, time) {
 
@@ -1507,7 +1554,7 @@ THREE.ColladaLoader = function() {
 
 		return retVal;
 
-	};
+	}
 
 	function findTimeNdx(keys, time) {
 
@@ -1527,7 +1574,7 @@ THREE.ColladaLoader = function() {
 
 		return ndx;
 
-	};
+	}
 
 	function interpolateKeys(keys, key, ndx, fullSid ) {
 
@@ -1566,7 +1613,7 @@ THREE.ColladaLoader = function() {
 
 		}
 
-	};
+	}
 
 	// Get next key with given sid
 
@@ -1586,7 +1633,7 @@ THREE.ColladaLoader = function() {
 
 		return null;
 
-	};
+	}
 
 	// Get previous key with given sid
 
@@ -1608,14 +1655,14 @@ THREE.ColladaLoader = function() {
 
 		return null;
 
-	};
+	}
 
 	function _Image() {
 
 		this.id = '';
 		this.init_from = '';
 
-	};
+	}
 
 	_Image.prototype.parse = function(element) {
 
@@ -1645,7 +1692,7 @@ THREE.ColladaLoader = function() {
 		this.skin = null;
 		this.morph = null;
 
-	};
+	}
 
 	Controller.prototype.parse = function(element ) {
 
@@ -1688,7 +1735,7 @@ THREE.ColladaLoader = function() {
 		this.targets = null;
 		this.weights = null;
 
-	};
+	}
 
 	Morph.prototype.parse = function(element ) {
 
@@ -1786,7 +1833,7 @@ THREE.ColladaLoader = function() {
 		this.joints = [];
 		this.weights = [];
 
-	};
+	}
 
 	Skin.prototype.parse = function(element ) {
 
@@ -1966,7 +2013,7 @@ THREE.ColladaLoader = function() {
 		this.name = '';
 		this.nodes = [];
 
-	};
+	}
 
 	VisualScene.prototype.getChildById = function(id, recursive ) {
 
@@ -2045,7 +2092,7 @@ THREE.ColladaLoader = function() {
 		this.channels = [];
 		this.matrix = new THREE.Matrix4();
 
-	};
+	}
 
 	Node.prototype.getChannelForTransform = function(transformSid ) {
 
@@ -2274,7 +2321,7 @@ THREE.ColladaLoader = function() {
 		this.data = [];
 		this.obj = null;
 
-	};
+	}
 
 	Transform.prototype.parse = function(element ) {
 
@@ -2513,7 +2560,7 @@ THREE.ColladaLoader = function() {
 		this.skeleton = [];
 		this.instance_material = [];
 
-	};
+	}
 
 	InstanceController.prototype.parse = function(element ) {
 
@@ -2564,7 +2611,7 @@ THREE.ColladaLoader = function() {
 		this.symbol = '';
 		this.target = '';
 
-	};
+	}
 
 	InstanceMaterial.prototype.parse = function(element ) {
 
@@ -2579,7 +2626,7 @@ THREE.ColladaLoader = function() {
 		this.url = '';
 		this.instance_material = [];
 
-	};
+	}
 
 	InstanceGeometry.prototype.parse = function(element ) {
 
@@ -2617,7 +2664,7 @@ THREE.ColladaLoader = function() {
 		this.id = '';
 		this.mesh = null;
 
-	};
+	}
 
 	Geometry.prototype.parse = function(element ) {
 
@@ -2657,7 +2704,7 @@ THREE.ColladaLoader = function() {
 		this.vertices = null;
 		this.geometry3js = null;
 
-	};
+	}
 
 	Mesh.prototype.parse = function(element ) {
 
@@ -3000,7 +3047,7 @@ THREE.ColladaLoader = function() {
 		this.p = [];
 		this.geometry = new THREE.Geometry();
 
-	};
+	}
 
 	Polygons.prototype.setVertices = function(vertices ) {
 
@@ -3064,7 +3111,7 @@ THREE.ColladaLoader = function() {
 
 		this.vcount = [];
 
-	};
+	}
 
 	Polylist.prototype = Object.create(Polygons.prototype);
 
@@ -3074,7 +3121,7 @@ THREE.ColladaLoader = function() {
 
 		this.vcount = 3;
 
-	};
+	}
 
 	Triangles.prototype = Object.create(Polygons.prototype);
 
@@ -3085,7 +3132,7 @@ THREE.ColladaLoader = function() {
 		this.stride = 0;
 		this.params = [];
 
-	};
+	}
 
 	Accessor.prototype.parse = function(element ) {
 
@@ -3117,7 +3164,7 @@ THREE.ColladaLoader = function() {
 
 		this.input = {};
 
-	};
+	}
 
 	Vertices.prototype.parse = function(element ) {
 
@@ -3145,7 +3192,7 @@ THREE.ColladaLoader = function() {
 		this.source = '';
 		this.set = 0;
 
-	};
+	}
 
 	Input.prototype.parse = function(element ) {
 
@@ -3169,7 +3216,7 @@ THREE.ColladaLoader = function() {
 		this.id = id;
 		this.type = null;
 
-	};
+	}
 
 	Source.prototype.parse = function(element ) {
 
@@ -3279,7 +3326,7 @@ THREE.ColladaLoader = function() {
 		this.name = '';
 		this.instance_effect = null;
 
-	};
+	}
 
 	Material.prototype.parse = function(element ) {
 
@@ -3311,7 +3358,7 @@ THREE.ColladaLoader = function() {
 		this.texcoord = null;
 		this.texOpts = null;
 
-	};
+	}
 
 	ColorOrTexture.prototype.isColor = function() {
 
@@ -3445,7 +3492,7 @@ THREE.ColladaLoader = function() {
 		this.effect = effect;
 		this.material = null;
 
-	};
+	}
 
 	Shader.prototype.parse = function(element ) {
 
@@ -3689,7 +3736,7 @@ THREE.ColladaLoader = function() {
 		this.init_from = null;
 		this.format = null;
 
-	};
+	}
 
 	Surface.prototype.parse = function(element ) {
 
@@ -3733,7 +3780,7 @@ THREE.ColladaLoader = function() {
 		this.magfilter = null;
 		this.mipfilter = null;
 
-	};
+	}
 
 	Sampler2D.prototype.parse = function(element ) {
 
@@ -3795,7 +3842,7 @@ THREE.ColladaLoader = function() {
 		this.surface = {};
 		this.sampler = {};
 
-	};
+	}
 
 	Effect.prototype.create = function() {
 
@@ -3998,7 +4045,7 @@ THREE.ColladaLoader = function() {
 
 		this.url = '';
 
-	};
+	}
 
 	InstanceEffect.prototype.parse = function(element ) {
 
@@ -4015,7 +4062,7 @@ THREE.ColladaLoader = function() {
 		this.sampler = [];
 		this.channel = [];
 
-	};
+	}
 
 	Animation.prototype.parse = function(element ) {
 
@@ -4089,7 +4136,7 @@ THREE.ColladaLoader = function() {
 		this.arrIndices = null;
 		this.member = null;
 
-	};
+	}
 
 	Channel.prototype.parse = function(element ) {
 
@@ -4150,7 +4197,7 @@ THREE.ColladaLoader = function() {
 		this.endTime = null;
 		this.duration = 0;
 
-	};
+	}
 
 	Sampler.prototype.parse = function(element ) {
 
@@ -4305,7 +4352,7 @@ THREE.ColladaLoader = function() {
 		this.targets = [];
 		this.time = time;
 
-	};
+	}
 
 	Key.prototype.addTarget = function(fullSid, transform, member, data ) {
 
@@ -4419,7 +4466,7 @@ THREE.ColladaLoader = function() {
 		this.name = '';
 		this.technique = '';
 
-	};
+	}
 
 	Camera.prototype.parse = function(element ) {
 
@@ -4537,7 +4584,7 @@ THREE.ColladaLoader = function() {
 
 		this.url = '';
 
-	};
+	}
 
 	InstanceCamera.prototype.parse = function(element ) {
 
@@ -4555,7 +4602,7 @@ THREE.ColladaLoader = function() {
 		this.name = '';
 		this.technique = '';
 
-	};
+	}
 
 	Light.prototype.parse = function(element ) {
 
@@ -4666,7 +4713,7 @@ THREE.ColladaLoader = function() {
 
 		this.url = '';
 
-	};
+	}
 
 	InstanceLight.prototype.parse = function(element ) {
 
@@ -4683,7 +4730,7 @@ THREE.ColladaLoader = function() {
 		this.joints = [];
 		this.links = [];
 
-	};
+	}
 
 	KinematicsModel.prototype.parse = function(element ) {
 
@@ -4752,12 +4799,10 @@ THREE.ColladaLoader = function() {
 			min: 0,
 			max: 0
 		};
-		this.positions = {
-			inital: 0.0, // initial position in collada file
-			zero: 0.0, // not sure how to set this? just going to copy from collada
-			middle: 0.0 // min + max / 2.0
-		};
-	};
+		this.zeroPosition = 0.0;
+		this.middlePosition = 0.0;
+
+	}
 
 	Joint.prototype.parse = function(element ) {
 
@@ -4768,21 +4813,21 @@ THREE.ColladaLoader = function() {
 			min: 0,
 			max: 0
 		};
-		this.positions = {
-			inital: 0.0, // initial position in collada file
-			zero: 0.0, // not sure how to set this? just going to copy from collada
-			middle: 0.0 // min + max / 2.0
-		};
+		this.zeroPosition = 0.0;
+		this.middlePosition = 0.0;
 
 		var axisElement = element.querySelector('axis');
 		var _axis = _floats(axisElement.textContent);
 		this.axis = getConvertedVec3(_axis, 0);
-		// this.axis = new THREE.Vector3(_axis[0], _axis[1], _axis[2]);
+
+		var min = element.querySelector('limits min') ? parseFloat(element.querySelector('limits min').textContent) : -360;
+		var max = element.querySelector('limits max') ? parseFloat(element.querySelector('limits max').textContent) : 360;
+
 		this.limits = {
-			min: parseFloat(element.querySelector('limits min').textContent),
-			max: parseFloat(element.querySelector('limits max').textContent)
+			min: min,
+			max: max
 		};
-		this.positions.middle = (this.limits.min + this.limits.max) / 2.0;
+		this.middlePosition = (this.limits.min + this.limits.max) / 2.0;
 		return this;
 
 	};
@@ -4794,7 +4839,7 @@ THREE.ColladaLoader = function() {
 		this.transforms = [];
 		this.attachments = [];
 
-	};
+	}
 
 	Link.prototype.parse = function(element ) {
 
@@ -4839,7 +4884,7 @@ THREE.ColladaLoader = function() {
 		this.transforms = [];
 		this.links = [];
 
-	};
+	}
 
 	Attachment.prototype.parse = function(element ) {
 
