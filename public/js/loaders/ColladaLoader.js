@@ -825,6 +825,11 @@ THREE.ColladaLoader = function() {
 
 	function createKinematics() {
 
+		if (kinematicsModel && kinematicsModel.joints.length === 0) {
+			kinematics = undefined;
+			return;
+		}
+
 		var jointMap = {};
 
 		var _addToMap = function(jointIndex, axis, parentVisualElement) {
@@ -853,7 +858,7 @@ THREE.ColladaLoader = function() {
 
 		kinematics = {
 
-			joints: kinematicsModel.joints,
+			joints: kinematicsModel && kinematicsModel.joints,
 
 			getDOFValue: function(jointIndex) {
 

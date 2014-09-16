@@ -123,7 +123,7 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     var jointIndex = 0;
 
     var interval = setInterval(function() {
-      if (drawable && drawable.kinematics) {
+      if (drawable && drawable.kinematics !== undefined) {
         var kinematics = drawable.kinematics;
         var joint = kinematics.joints[jointIndex];
         if (jointIndex == kinematics.joints.length) {
