@@ -855,7 +855,7 @@ THREE.ColladaLoader = function() {
 
 			joints: kinematicsModel.joints,
 
-			getDOF: function(jointIndex) {
+			getDOFValue: function(jointIndex) {
 
 				var jointData = jointMap[jointIndex];
 
@@ -865,13 +865,13 @@ THREE.ColladaLoader = function() {
 
 				} else {
 
-					console.log('getDOF: joint ' + jointIndex + ' doesn\'t exist');
+					console.log('getDOFValue: joint ' + jointIndex + ' doesn\'t exist');
 
 				}
 
 			},
 
-			setDOF: function(jointIndex, value) {
+			setDOFValue: function(jointIndex, value) {
 
 				var jointData = jointMap[jointIndex];
 
@@ -881,7 +881,7 @@ THREE.ColladaLoader = function() {
 
 					if (value > joint.limits.max || value < joint.limits.min) {
 
-						console.log('setDOF: joint ' + jointIndex + ' value ' + value + ' outside of limits (min: ' + joint.limits.min + ', max: ' + joint.limits.max + ')');
+						console.log('setDOFValue: joint ' + jointIndex + ' value ' + value + ' outside of limits (min: ' + joint.limits.min + ', max: ' + joint.limits.max + ')');
 
 					} else {
 
@@ -941,7 +941,7 @@ THREE.ColladaLoader = function() {
 				}
 				else {
 
-					console.log('setDOF: joint ' + jointIndex + ' doesn\'t exist');
+					console.log('setDOFValue: joint ' + jointIndex + ' doesn\'t exist');
 
 				}
 

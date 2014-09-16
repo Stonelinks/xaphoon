@@ -24,6 +24,10 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
       this._render();
     },
 
+    'change:dofvalues': function() {
+      this._render();
+    },
+
     // this basically takes the place of the add event
     'drawable:loaded': function(drawable) {
       this.addDrawable(drawable);
@@ -111,6 +115,44 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
 
     this.collection.add(newDrawable);
     newDrawable.save();
+
+    var drawable = newDrawable;
+
+    var angle = undefined;
+
+    var jointIndex = 0;
+
+    var interval = setInterval(function() {
+      if (drawable && drawable.kinematics) {
+        var kinematics = drawable.kinematics;
+        var joint = kinematics.joints[jointIndex];
+        if (jointIndex == kinematics.joints.length) {
+          clearInterval(interval);
+          return;
+        }
+        else if (angle === undefined) {
+          angle = joint.limits.min;
+        }
+        else if (angle >= joint.limits.max) {
+          drawable.setDOFValue(jointIndex, joint.zeroPosition);
+          jointIndex++;
+          angle = undefined;
+        }
+        else {
+          angle += 10.0;
+        }
+
+        // console.log(jointIndex, angle)
+        drawable.setDOFValue(jointIndex, angle);
+        drawable.trigger('change:dofvalues');
+        drawable.save({
+          silent: true
+        });
+
+        window._renderer._render();
+      }
+    }, 50);
+
   },
 
   _transformControlDragging: false,

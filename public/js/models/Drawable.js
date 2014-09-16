@@ -16,7 +16,8 @@ var Drawable = BaseRealtimeModel.extend({
     texture: '/img/crate.gif',
     geometryType: 'BoxGeometry',
     geometryParams: [200, 200, 200],
-    matrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    matrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    dofvalues: []
   },
 
   _mesh: undefined,
@@ -48,9 +49,18 @@ var Drawable = BaseRealtimeModel.extend({
       loader.load(url, function(collada) {
         var dae = collada.scene;
 
-        // console.log(collada.dae.kinematicsModel);
-        if (collada.dae.kinematicsModel) {
+        if (collada.kinematics) {
           _this.kinematics = collada.kinematics;
+
+          _this.on('change:dofvalues', function() {
+            console.log('Drawable: update dofvalues');
+            _this.updateDOFValues();
+          });
+          _this.updateDOFValues();
+
+          _this.set('dofvalues', _.map(collada.kinematics.joints, function(joint) {
+            return joint.zeroPosition;
+          }));
         }
 
         _this._mesh = dae;
@@ -97,7 +107,6 @@ var Drawable = BaseRealtimeModel.extend({
               }
             });
           }
-          // _loadCollada(this.get('geometryParams')[0], this.get('geometryParams')[1])
         });
       }, function() {
         console.warn('Drawable: problem loading ' + zaeUrl);
@@ -105,6 +114,36 @@ var Drawable = BaseRealtimeModel.extend({
     }
     else {
       console.warn('Drawable: no compatible geometry mesh');
+    }
+  },
+
+  updateDOFValues: function() {
+    if (this.kinematics) {
+      var dofvalues = this.get('dofvalues');
+
+      var _this = this;
+      _.forEach(dofvalues, function(dofvalue, index) {
+        // debugger;
+        // if (_this.kinematics.joints[index] && dofvalues[index] !== dofvalue) {
+        _this.kinematics.setDOFValue(index, dofvalue);
+        // }
+      });
+    }
+  },
+
+  setDOFValue: function(index, value) {
+    // debugger;
+    if (this.kinematics) {
+      var dofvalues = this.get('dofvalues');
+      dofvalues[index] = value;
+      this.set('dofvalues', dofvalues);
+    }
+  },
+
+  getDOFValue: function(index) {
+    // debugger;
+    if (this.kinematics) {
+      return this.get('dofvalues')[index];
     }
   },
 

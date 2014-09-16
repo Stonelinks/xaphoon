@@ -42,10 +42,11 @@ var TransformControl = Backbone.Model.extend({
       // row-major (set - sanity check): [0, ]
 
       if (!_.isEqual(drawable.get('matrix'), elementsRowMajor)) {
-        drawable.set('matrix', elementsRowMajor, {
+        drawable.set('matrix', elementsRowMajor);
+        drawable.trigger('change:matrix');
+        drawable.save({
           silent: true
         });
-        drawable.save();
       }
     });
 
