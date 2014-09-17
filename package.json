@@ -14,7 +14,7 @@
     "url": "https://github.com/Stonelinks/xaphoon/issues"
   },
   "dependencies": {
-    "backbone.io": "^0.4.1",
+    "backbone.io": "git+https://github.com/Stonelinks/backbone.io.git#7bdfdcd9ec",
     "finalhandler": "^0.1.0",
     "serve-static": "^1.5.3"
   },
