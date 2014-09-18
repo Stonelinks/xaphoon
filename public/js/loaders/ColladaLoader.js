@@ -829,7 +829,7 @@ THREE.ColladaLoader = function() {
 
 		var jointMap = {};
 
-		var _addToMap = function(jointIndex, axis, parentVisualElement) {
+		var _addToMap = function(jointIndex, parentVisualElement) {
 
 			var parentVisualElementId = parentVisualElement.getAttribute('id');
 			var colladaNode = visualScene.getChildById(parentVisualElementId, true);
@@ -841,7 +841,6 @@ THREE.ColladaLoader = function() {
 
 					jointMap[jointIndex] = {
 						node: node,
-						axis: axis,
 						transforms: colladaNode.transforms,
 						joint: joint,
 						position: joint.zeroPosition
@@ -901,7 +900,24 @@ THREE.ColladaLoader = function() {
 							if (transform.sid && transform.sid.indexOf('joint' + jointIndex) !== -1) {
 
 								// apply joint value here
-								matrix.multiply(m1.makeRotationAxis(axis, THREE.Math.degToRad(value)));
+								switch (joint.type) {
+
+									case 'revolute':
+
+										matrix.multiply(m1.makeRotationAxis(axis, THREE.Math.degToRad(value)));
+										break;
+
+									case 'prismatic':
+
+										matrix.multiply(m1.makeTranslation(axis.x * value, axis.y * value, axis.z * value));
+										break;
+
+									default:
+
+										console.warn('unknown joint type: ' + joint.type);
+										break;
+
+								}
 
 							} else {
 
@@ -971,7 +987,7 @@ THREE.ColladaLoader = function() {
 
 						if (visualTargetElement) {
 							var parentVisualElement = visualTargetElement.parentElement;
-							_addToMap(jointIndex, axis, parentVisualElement);
+							_addToMap(jointIndex, parentVisualElement);
 						}
 
 						break;
@@ -4801,6 +4817,7 @@ THREE.ColladaLoader = function() {
 			min: 0,
 			max: 0
 		};
+		this.type = '';
 		this.zeroPosition = 0.0;
 		this.middlePosition = 0.0;
 
@@ -4815,6 +4832,7 @@ THREE.ColladaLoader = function() {
 			min: 0,
 			max: 0
 		};
+		this.type = '';
 		this.zeroPosition = 0.0;
 		this.middlePosition = 0.0;
 
@@ -4829,6 +4847,22 @@ THREE.ColladaLoader = function() {
 			min: min,
 			max: max
 		};
+
+		var jointTypes = ['prismatic', 'revolute'];
+		for (var i = 0; i < jointTypes.length; i++) {
+
+			var type = jointTypes[i];
+
+			var jointElement = element.querySelector(type);
+
+			if (jointElement) {
+
+				this.type = type;
+
+			}
+
+		}
+
 		this.middlePosition = (this.limits.min + this.limits.max) / 2.0;
 		return this;
 
