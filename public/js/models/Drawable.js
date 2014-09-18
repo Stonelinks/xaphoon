@@ -35,7 +35,7 @@ var Drawable = BaseRealtimeModel.extend({
       _this.trigger('drawable:loaded', _this);
 
       _this.on('change:matrix', function() {
-        console.log('Drawable: update mesh');
+        // console.log('Drawable: update mesh');
         _this.updateMesh();
       });
       _this.updateMesh();
@@ -53,7 +53,7 @@ var Drawable = BaseRealtimeModel.extend({
           _this.kinematics = collada.kinematics;
 
           _this.on('change:dofvalues', function() {
-            console.log('Drawable: update dofvalues');
+            // console.log('Drawable: update dofvalues');
             _this.updateDOFValues();
           });
           _this.updateDOFValues();
@@ -69,9 +69,6 @@ var Drawable = BaseRealtimeModel.extend({
 
         dae.scale.x = dae.scale.y = dae.scale.z = scale;
         dae.updateMatrix();
-
-        // kinda ghetto...
-        window._renderer._render();
       });
     };
 
@@ -123,7 +120,9 @@ var Drawable = BaseRealtimeModel.extend({
 
       var _this = this;
       _.forEach(dofvalues, function(dofvalue, index) {
-        _this.kinematics.setDOFValue(index, dofvalue);
+        if (!_this.kinematics.joints[index].static) {
+          _this.kinematics.setDOFValue(index, dofvalue);
+        }
       });
     }
   },
