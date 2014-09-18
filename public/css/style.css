@@ -6236,8 +6236,11 @@ hr {
   margin: 0;
   padding: 0;
   overflow-y: auto;
-  height: 80vh;
+  height: 85vh;
   border: none;
+}
+#page-content-wrapper {
+  overflow: hidden;
 }
 /*!
  * Start Bootstrap - Simple Sidebar HTML Template (http://startbootstrap.com)

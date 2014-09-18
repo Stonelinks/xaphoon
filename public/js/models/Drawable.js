@@ -120,7 +120,7 @@ var Drawable = BaseRealtimeModel.extend({
 
       var _this = this;
       _.forEach(dofvalues, function(dofvalue, index) {
-        if (!_this.kinematics.joints[index].static) {
+        if (_this.kinematics.joints[index] && !_this.kinematics.joints[index].static) {
           _this.kinematics.setDOFValue(index, dofvalue);
         }
       });

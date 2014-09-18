@@ -29,13 +29,13 @@ $(document).ready(function() {
           if (drawable && drawable.kinematics) {
 
             if (jointValue >= joint.limits.max || joint.static) {
-
+              
               // change over to the next joint
               if (!joint.static) {
                 drawable.setDOFValue(jointIndex, joint.zeroPosition);
               }
               jointIndex++;
-
+              
               // stop if we're past the number of joints
               if (jointIndex >= kinematics.joints.length) {
                 clearInterval(interval);
@@ -46,14 +46,12 @@ $(document).ready(function() {
                 jointValue = joint.limits.min;
                 step = makeStep();
               }
-
             }
 
-            console.log('jointIndex: ' + jointIndex + ' jointValue: ' + jointValue);
+            // console.log('jointIndex: ' + jointIndex + ' jointValue: ' + jointValue);
 
             jointValue += step;
             drawable.setDOFValue(jointIndex, jointValue);
-
 
             drawable.trigger('change:dofvalues');
             drawable.save({

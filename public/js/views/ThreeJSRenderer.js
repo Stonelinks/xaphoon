@@ -186,11 +186,11 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
   },
 
   getWidth: function() {
-    return window.innerWidth - $(canvasID).offset().left - 15;
+    return window.innerWidth - $(canvasID).offset().left - 1.0;
   },
 
   getHeight: function() {
-    return window.innerHeight - $(canvasID).offset().top - 15;
+    return window.innerHeight - $(canvasID).offset().top - 5.25;  // why?
   },
 
   camera: undefined,
