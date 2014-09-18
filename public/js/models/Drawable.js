@@ -123,16 +123,12 @@ var Drawable = BaseRealtimeModel.extend({
 
       var _this = this;
       _.forEach(dofvalues, function(dofvalue, index) {
-        // debugger;
-        // if (_this.kinematics.joints[index] && dofvalues[index] !== dofvalue) {
         _this.kinematics.setDOFValue(index, dofvalue);
-        // }
       });
     }
   },
 
   setDOFValue: function(index, value) {
-    // debugger;
     if (this.kinematics) {
       var dofvalues = this.get('dofvalues');
       dofvalues[index] = value;
@@ -141,7 +137,6 @@ var Drawable = BaseRealtimeModel.extend({
   },
 
   getDOFValue: function(index) {
-    // debugger;
     if (this.kinematics) {
       return this.get('dofvalues')[index];
     }

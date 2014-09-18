@@ -191,10 +191,7 @@ THREE.ColladaLoader = function() {
 		};
 
 		// scene.traverse(function(o) {
-			// console.log({
-				// id: o.id,
-				// name: o.name
-			// });
+			// console.log(_.pick(o, ['id', 'name', 'visible']))
 		// });
 
 		if (callBack) {

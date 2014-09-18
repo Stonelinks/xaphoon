@@ -92,6 +92,16 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
       });
     },
 
+    'click #add-irex': function(e) {
+      window.sendFeedUpdate('added irex scene');
+
+      this.createNewDrawable({
+        geometryType: 'collada',
+        // geometryParams: ['/vendor/collada_robots/kawada-hironx.zae']
+        geometryParams: ['/models/irex2013_copy.mujin.dae', 500.0]
+      });
+    },
+
     'click .load-robot': function(e) {
       var $target = $(e.currentTarget);
       window.sendFeedUpdate('added ' + $target.text());
@@ -241,6 +251,8 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     this.renderer.sortObjects = false;
     this.renderer.setSize(this.getWidth(), this.getHeight());
 
+    this.renderer.setClearColor(0x333333);
+
     var _this = this;
     var _setRendererDOMElement = function() {
       _this.$el.find(canvasID).append(_this.renderer.domElement);
@@ -257,13 +269,13 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
 
   setupScene: function() {
     this.scene = new THREE.Scene();
-    this.scene.add(new THREE.GridHelper(500, 100));
 
-    var ambient = new THREE.AmbientLight(0x888888);
-    this.scene.add(ambient);
+    var grid = new THREE.GridHelper(1000, 100);
+    grid.setColors(0xD4D4D4, 0x888888);
+    this.scene.add(grid);
 
-    var light = new THREE.DirectionalLight(0xffffff, 2);
-    light.position.set(1, 1, 1);
+    var light = new THREE.HemisphereLight(0xFFFFFF, 0x645943, 1.1);
+    light.position.set(0, 50.0, 0);
     this.scene.add(light);
   },
 
