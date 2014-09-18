@@ -884,6 +884,10 @@ THREE.ColladaLoader = function() {
 
 						console.log('setDOFValue: joint ' + jointIndex + ' value ' + value + ' outside of limits (min: ' + joint.limits.min + ', max: ' + joint.limits.max + ')');
 
+					} else if (joint.static) {
+
+						console.log('setDOFValue: joint ' + jointIndex + ' is static');
+
 					} else {
 
 						var threejsNode = jointData.node;
@@ -4818,6 +4822,7 @@ THREE.ColladaLoader = function() {
 			max: 0
 		};
 		this.type = '';
+		this.static = false;
 		this.zeroPosition = 0.0;
 		this.middlePosition = 0.0;
 
@@ -4833,6 +4838,7 @@ THREE.ColladaLoader = function() {
 			max: 0
 		};
 		this.type = '';
+		this.static = false;
 		this.zeroPosition = 0.0;
 		this.middlePosition = 0.0;
 
@@ -4860,6 +4866,13 @@ THREE.ColladaLoader = function() {
 				this.type = type;
 
 			}
+
+		}
+
+		// if the min is equal to or somehow greater than the max, consider the joint static
+		if (this.limits.min >= this.limits.max) {
+
+			this.static = true;
 
 		}
 
