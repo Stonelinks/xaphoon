@@ -16,7 +16,6 @@ var TransformControl = Backbone.Model.extend({
     this._control = new THREE.TransformControls(this.renderer.camera, this.renderer.renderer.domElement);
 
     this._control.addEventListener('change', function() {
-      _this.renderer._render();
 
       var drawable = _this.get('attachedDrawable');
       var elementsFloat32Arr = drawable.getMesh().matrix.elements;

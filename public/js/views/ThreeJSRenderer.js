@@ -17,21 +17,11 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
   collectionEvents: {
     'remove': function(drawable) {
       this.removeDrawable(drawable);
-      this._render();
-    },
-
-    'change:matrix': function() {
-      this._render();
-    },
-
-    'change:dofvalues': function() {
-      this._render();
     },
 
     // this basically takes the place of the add event
     'drawable:loaded': function(drawable) {
       this.addDrawable(drawable);
-      this._render();
     }
   },
 
@@ -125,44 +115,6 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
 
     this.collection.add(newDrawable);
     newDrawable.save();
-
-    var drawable = newDrawable;
-
-    var angle = undefined;
-
-    var jointIndex = 0;
-
-    var interval = setInterval(function() {
-      if (drawable && drawable.kinematics !== undefined) {
-        var kinematics = drawable.kinematics;
-        var joint = kinematics.joints[jointIndex];
-        if (jointIndex == kinematics.joints.length) {
-          clearInterval(interval);
-          return;
-        }
-        else if (angle === undefined) {
-          angle = joint.limits.min;
-        }
-        else if (angle >= joint.limits.max) {
-          drawable.setDOFValue(jointIndex, joint.zeroPosition);
-          jointIndex++;
-          angle = undefined;
-        }
-        else {
-          angle += 10.0;
-        }
-
-        // console.log(jointIndex, angle)
-        drawable.setDOFValue(jointIndex, angle);
-        drawable.trigger('change:dofvalues');
-        drawable.save({
-          silent: true
-        });
-
-        window._renderer._render();
-      }
-    }, 50);
-
   },
 
   _transformControlDragging: false,
@@ -215,7 +167,6 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
 
           if (raycastedDrawable) {
             this.transformControl.attachDrawable(raycastedDrawable);
-            this._render();
           }
         }
       });
@@ -247,11 +198,14 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
   renderer: undefined,
 
   setupRenderer: function() {
-    this.renderer = new THREE.WebGLRenderer();
+    this.renderer = new THREE.WebGLRenderer({
+      precision: 'highp',
+      antialias: true
+    });
     this.renderer.sortObjects = false;
     this.renderer.setSize(this.getWidth(), this.getHeight());
 
-    this.renderer.setClearColor(0x333333);
+    this.renderer.setClearColor(0xaaaaaa);
 
     var _this = this;
     var _setRendererDOMElement = function() {
@@ -271,10 +225,10 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     this.scene = new THREE.Scene();
 
     var grid = new THREE.GridHelper(1000, 100);
-    grid.setColors(0xD4D4D4, 0x888888);
+    grid.setColors(0x444444, 0x888888);
     this.scene.add(grid);
 
-    var light = new THREE.HemisphereLight(0xFFFFFF, 0x645943, 1.1);
+    var light = new THREE.HemisphereLight(0xFFFFFF, 0x645943);
     light.position.set(0, 50.0, 0);
     this.scene.add(light);
   },
@@ -286,7 +240,6 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     var mesh = drawable.getMesh();
     if (mesh) {
       this.scene.add(mesh);
-      this._render();
     }
   },
 
@@ -295,7 +248,6 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     var mesh = drawable.getMesh();
     if (mesh) {
       this.scene.remove(mesh);
-      this._render();
     }
   },
 
@@ -304,12 +256,20 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
     this.camera.updateProjectionMatrix();
 
     this.renderer.setSize(this.getWidth(), this.getHeight());
-    this._render();
   },
 
-  _render: function() {
-    this.transformControl.getControl().update();
-    this.renderer.render(this.scene, this.camera);
+  startWebGLRendering: function() {
+    var _this = this;
+    var _render = function() {
+      _this.transformControl.getControl().update();
+      _this.renderer.render(_this.scene, _this.camera);
+    };
+
+    var _animate = function() {
+      requestAnimationFrame(_animate);
+      _render();
+    };
+    _animate();
   },
 
   pointerVector: new THREE.Vector3(),
@@ -454,7 +414,7 @@ var ThreeJSRenderer = BaseRealtimeView.extend({
         _this.onWindowResize();
       }, false);
 
-      _this._render();
+      _this.startWebGLRendering();
       _this.render();
     });
   }

@@ -8,10 +8,6 @@ var OrbitControl = Backbone.Model.extend({
 
     this._control = new THREE.OrbitControls(this.renderer.camera);
     this._control.damping = 0.1;
-
-    this._control.addEventListener('change', function() {
-      _this.renderer._render();
-    });
   },
 
   getControl: function() {
