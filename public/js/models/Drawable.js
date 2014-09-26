@@ -99,13 +99,13 @@ var Drawable = m3js.Drawable.extend({
       var _this = this;
       _.forEach(dofvalues, function(dofvalue, index) {
         if (_this.kinematics.joints[index] && !_this.kinematics.joints[index].static) {
-          _this.kinematics.setDOFValue(index, dofvalue);
+          _this.kinematics.setJointValue(index, dofvalue);
         }
       });
     }
   },
 
-  setDOFValue: function(index, value) {
+  setJointValue: function(index, value) {
     if (this.kinematics) {
       var dofvalues = this.get('dofvalues');
       dofvalues[index] = value;

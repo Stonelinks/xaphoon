@@ -64,7 +64,7 @@ $(document).ready(function() {
 
                 // change over to the next joint
                 if (!joint.static) {
-                  drawable.setDOFValue(jointIndex, joint.zeroPosition);
+                  drawable.setJointValue(jointIndex, joint.zeroPosition);
                 }
                 jointIndex++;
 
@@ -83,7 +83,7 @@ $(document).ready(function() {
               // console.log('jointIndex: ' + jointIndex + ' jointValue: ' + jointValue);
 
               jointValue += step;
-              drawable.setDOFValue(jointIndex, jointValue);
+              drawable.setJointValue(jointIndex, jointValue);
 
               drawable.trigger('change:dofvalues');
               drawable.save({
