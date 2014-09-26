@@ -5,13 +5,11 @@ block append body
     #sidebar-wrapper
       #feed-anchor
     #page-content-wrapper
+      #transform-control-anchor
       #renderer-anchor
 
 block append js
 
-  //
-    dependencies
-    
   //
     backbone
   script(src='/vendor/jquery/dist/jquery.min.js')
@@ -19,13 +17,13 @@ block append js
   script(src='/vendor/backbone/backbone.js')
 
   //
+    marionette
+  script(src='/vendor/marionette/lib/backbone.marionette.min.js')
+  
+  //
     realtime things
   script(src='/socket.io/socket.io.js')
   script(src='/socket.io/backbone.io.js')
-  
-  //
-    marionette
-  script(src='/vendor/marionette/lib/backbone.marionette.min.js')
   
   //
     misc
@@ -36,21 +34,19 @@ block append js
   //
     threejs
   script(src='/vendor/threejs/build/three.js')
-  script(src='/js/controls/TransformControls.js')
-  script(src='/js/controls/OrbitControls.js')
+
+  //
+    marionette-threejs
+  script(src='/vendor/marionette-threejs/marionette-threejs.js')
+  
+  //
+    our modified ColladaLoader
   script(src='/js/loaders/ColladaLoader.js')
 
   //
-    the app
-  script(src='/js/app.js')
-
-  //
     models
-  script(src='/js/models/BaseRealtimeModel.js')
   script(src='/js/models/FeedItem.js')
   script(src='/js/models/Drawable.js')
-  script(src='/js/models/TransformControl.js')
-  script(src='/js/models/OrbitControl.js')
 
   //
     collections
@@ -63,10 +59,10 @@ block append js
   script(src='/js/views/BaseRealtimeView.js')
   script(src='/js/views/FeedView.js')
   script(src='/js/views/ThreeJSRenderer.js')
+  script(src='/js/views/TransformControlMode.js')
   
   //
     start the app
-  script(src='/js/Router.js')
   script(src='/js/main.js')
 
   script(type='text/javascript')
@@ -86,7 +82,7 @@ block append body
   script#feed-item-template(type='text/html')
     | <strong style='color: <%= color %>; display: inline;'>>> </strong><strong><%= message + '\n' %><strong>
 
-  script#renderer-template(type='text/html')
+  script#transform-control-template(type='text/html')
     nav.navbar.navbar-default
       .container-fluid
         ul.nav.navbar-nav
@@ -107,7 +103,7 @@ block append body
           li
             a#toggle-space(href='javascript:void(0)')
               | <span class="glyphicon glyphicon-<%= transformControlSpace == 'Local' ? 'adjust' : 'globe' %>"></span>
-              |  <%= capitalise(transformControlSpace) %> space
+              |  <%= transformControlSpace %> space
           li
             a#add-box(href='javascript:void(0)')
               span.glyphicon.glyphicon-plus
@@ -128,4 +124,3 @@ block append body
                 each robot in ['barrett-wamhand.zae', 'care-o-bot3.zae', 'crustcrawler-ax12.zae', 'exactdynamics-manusarmleft.zae', 'kawada-hironx.zae', 'kuka-kr30l16.zae', 'kuka-kr3-cr.zae', 'kuka-kr5-r650.zae', 'kuka-kr5-r850.zae', 'kuka-youbot-hires.zae', 'kuka-youbot.zae', 'mitsubishi-pa10.zae', 'neuronics-katana.zae', 'romela-darwin-op.zae', 'schunk-lwa3.zae', 'schunk-sdh.zae', 'universalrobots-ur6-85-5-a.zae', 'willowgarage-pr2.zae']
                   li
                     a(href='javascript:void(0)', class="load-robot", data-robot=robot) !{robot.split('.')[0]}
-    #canvas-anchor

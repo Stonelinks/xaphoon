@@ -16,12 +16,10 @@
   ],
   "dependencies": {
     "bootstrap": "~3.2.0",
-    "threejs": "r68",
     "html5shiv": "~3.7.2",
     "respond": "~1.4.2",
-    "marionette": "~2.1.0",
-    "backbone": "~1.1.2",
     "collada_robots": "https://github.com/rdiankov/collada_robots.git#98c0760b8c",
-    "zip": "https://github.com/gildas-lormeau/zip.js.git#4c93974e90"
+    "zip": "https://github.com/gildas-lormeau/zip.js.git#4c93974e90",
+    "marionette-threejs": "0.0.2"
   }
 }

@@ -2,7 +2,7 @@
 <p align="center">
   <img title="backbone marionette" src='http://marionettejs.com/downloads/marionette-gh-banner.svg' />
 </p>
-<p align="center"> Make your Backbone.js apps dance!</p>
+<p align="center">The Backbone framework</p>
 <p align="center">
   <a title='Build Status' href="https://travis-ci.org/marionettejs/backbone.marionette">
     <img src='https://secure.travis-ci.org/marionettejs/backbone.marionette.svg?branch=master' />
@@ -104,13 +104,13 @@ MarionetteJS currently works with the following libraries:
 
 * [jQuery](http://jquery.com) v1.8+
 * [Underscore](http://underscorejs.org) v1.4.4 - 1.6.0
-* [Backbone](http://backbonejs.org) v1.0.0 - 1.1.2 are preferred. v0.9.9 and v0.9.10 should work still
+* [Backbone](http://backbonejs.org) v1.0.0 - 1.1.2 are preferred.
 * [Backbone.Wreqr](https://github.com/marionettejs/backbone.wreqr) Comes automatically with the bundled build.
 * [Backbone.BabySitter](https://github.com/marionettejs/backbone.babysitter) Comes automatically with the bundled build.
 
 Marionette has not been tested against any other versions of these
 libraries. You may or may not have success if you use a version other
-than what it listed here.
+than what is listed here.
 
 
 ## How to Contribute

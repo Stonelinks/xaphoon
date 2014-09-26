@@ -6,12 +6,6 @@
 // For slicing `arguments` in functions
 var slice = Array.prototype.slice;
 
-function throwError(message, name) {
-  var error = new Error(message);
-  error.name = name || 'Error';
-  throw error;
-}
-
 // Marionette.extend
 // -----------------
 
@@ -60,22 +54,47 @@ Marionette.normalizeMethods = function(hash) {
   return normalizedHash;
 };
 
+// utility method for parsing @ui. syntax strings
+// into associated selector
+Marionette.normalizeUIString = function(uiString, ui) {
+  return uiString.replace(/@ui\.[a-zA-Z_$0-9]*/g, function(r) {
+    return ui[r.slice(4)];
+  });
+};
 
 // allows for the use of the @ui. syntax within
 // a given key for triggers and events
-// swaps the @ui with the associated selector
+// swaps the @ui with the associated selector.
+// Returns a new, non-mutated, parsed events hash.
 Marionette.normalizeUIKeys = function(hash, ui) {
   if (typeof(hash) === 'undefined') {
     return;
   }
 
-  _.each(_.keys(hash), function(v) {
-    var pattern = /@ui\.[a-zA-Z_$0-9]*/g;
-    if (v.match(pattern)) {
-      hash[v.replace(pattern, function(r) {
-        return ui[r.slice(4)];
-      })] = hash[v];
-      delete hash[v];
+  hash = _.clone(hash);
+
+  _.each(_.keys(hash), function(key) {
+    var normalizedKey = Marionette.normalizeUIString(key, ui);
+    if (normalizedKey !== key) {
+      hash[normalizedKey] = hash[key];
+      delete hash[key];
+    }
+  });
+
+  return hash;
+};
+
+// allows for the use of the @ui. syntax within
+// a given value for regions
+// swaps the @ui with the associated selector
+Marionette.normalizeUIValues = function(hash, ui) {
+  if (typeof(hash) === 'undefined') {
+    return;
+  }
+
+  _.each(hash, function(val, key) {
+    if (_.isString(val)) {
+      hash[key] = Marionette.normalizeUIString(val, ui);
     }
   });
 

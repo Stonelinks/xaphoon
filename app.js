@@ -18,8 +18,7 @@ var port = process.env.PORT || 3000;
 app.listen(port);
 
 var backends = {};
-var collections = ['feed', 'drawables'];
-collections.forEach(function(collection) {
+['feed', 'drawables'].forEach(function(collection) {
   var backend = backboneio.createBackend();
   backend.use(backboneio.middleware.memoryStore());
   backends[collection] = backend;

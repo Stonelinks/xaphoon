@@ -36,6 +36,11 @@ Marionette.Behavior = (function(_, Backbone) {
       this.stopListening();
     },
 
+    proxyViewProperties: function (view) {
+      this.$el = view.$el;
+      this.el = view.el;
+    },
+
     // import the `triggerMethod` to trigger events with corresponding
     // methods if the method exists
     triggerMethod: Marionette.triggerMethod,
@@ -52,7 +57,7 @@ Marionette.Behavior = (function(_, Backbone) {
 
   // Borrow Backbones extend implementation
   // this allows us to setup a proper
-  // inheritence pattern that follow in suite
+  // inheritance pattern that follows suit
   // with the rest of Marionette views.
   Behavior.extend = Marionette.extend;
 

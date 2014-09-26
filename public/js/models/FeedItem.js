@@ -1,4 +1,4 @@
-var FeedItem = BaseRealtimeModel.extend({
+var FeedItem = Backbone.Model.extend({
   defaults: {
     message: '',
     color: '#fff'

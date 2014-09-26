@@ -68,8 +68,10 @@ Marionette.ItemView = Marionette.View.extend({
     }
 
     if (!template) {
-      throwError('Cannot render the template since it is null or undefined.',
-        'UndefinedTemplateError');
+      throw new Marionette.Error({
+        name: 'UndefinedTemplateError',
+        message: 'Cannot render the template since it is null or undefined.'
+      });
     }
 
     // Add in entity data and template helpers
@@ -84,7 +86,7 @@ Marionette.ItemView = Marionette.View.extend({
   },
 
   // Attaches the content of a given view.
-  // This method can be overriden to optimize rendering,
+  // This method can be overridden to optimize rendering,
   // or to render in a non standard way.
   //
   // For example, using `innerHTML` instead of `$el.html`

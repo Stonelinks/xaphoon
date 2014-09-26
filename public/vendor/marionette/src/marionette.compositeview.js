@@ -24,18 +24,16 @@ Marionette.CompositeView = Marionette.CollectionView.extend({
 
     // Bind only after composite view is rendered to avoid adding child views
     // to nonexistent childViewContainer
-    this.once('render', function() {
-      if (this.collection) {
-        this.listenTo(this.collection, 'add', this._onCollectionAdd);
-        this.listenTo(this.collection, 'remove', this._onCollectionRemove);
-        this.listenTo(this.collection, 'reset', this._renderChildren);
 
-        if (this.sort) {
-          this.listenTo(this.collection, 'sort', this._sortViews);
-        }
+    if (this.collection) {
+      this.listenTo(this.collection, 'add', this._onCollectionAdd);
+      this.listenTo(this.collection, 'remove', this._onCollectionRemove);
+      this.listenTo(this.collection, 'reset', this._renderChildren);
+
+      if (this.sort) {
+        this.listenTo(this.collection, 'sort', this._sortViews);
       }
-    });
-
+    }
   },
 
   // Retrieve the `childView` to be used when rendering each of
@@ -46,7 +44,10 @@ Marionette.CompositeView = Marionette.CollectionView.extend({
     var childView = this.getOption('childView') || this.constructor;
 
     if (!childView) {
-      throwError('A "childView" must be specified', 'NoChildViewError');
+      throw new Marionette.Error({
+        name: 'NoChildViewError',
+        message: 'A "childView" must be specified'
+      });
     }
 
     return childView;
@@ -109,7 +110,7 @@ Marionette.CompositeView = Marionette.CollectionView.extend({
   },
 
   // Attaches the content of the root.
-  // This method can be overriden to optimize rendering,
+  // This method can be overridden to optimize rendering,
   // or to render in a non standard way.
   //
   // For example, using `innerHTML` instead of `$el.html`
@@ -160,8 +161,10 @@ Marionette.CompositeView = Marionette.CollectionView.extend({
       }
 
       if (container.length <= 0) {
-        throwError('The specified "childViewContainer" was not found: ' +
-          containerView.childViewContainer, 'ChildViewContainerMissingError');
+        throw new Marionette.Error({
+          name: 'ChildViewContainerMissingError',
+          message: 'The specified "childViewContainer" was not found: ' + containerView.childViewContainer
+        });
       }
 
     } else {

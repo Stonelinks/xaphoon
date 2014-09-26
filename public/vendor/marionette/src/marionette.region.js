@@ -14,7 +14,10 @@ Marionette.Region = function(options) {
   this.el = this.el instanceof Backbone.$ ? this.el[0] : this.el;
 
   if (!this.el) {
-    throwError('An "el" must be specified for a region.', 'NoElError');
+    throw new Marionette.Error({
+      name: 'NoElError',
+      message: 'An "el" must be specified for a region.'
+    });
   }
 
   this.$el = this.getEl(this.el);
@@ -58,8 +61,10 @@ _.extend(Marionette.Region, {
       return this._buildRegionFromRegionClass(regionConfig);
     }
 
-    throwError('Improper region configuration type. Please refer ' +
-      'to http://marionettejs.com/docs/marionette.region.html#region-configuration-types');
+    throw new Marionette.Error({
+      message: 'Improper region configuration type.',
+      url: 'marionette.region.html#region-configuration-types'
+    });
   },
 
   // Build the region from a string selector like '#foo-region'
@@ -139,12 +144,16 @@ _.extend(Marionette.Region.prototype, Backbone.Events, {
     // only destroy the view if we don't want to preventDestroy and the view is different
     var _shouldDestroyView = !preventDestroy && isDifferentView;
 
+    // show the view if the view is different or if you want to re-show the view
+    var _shouldShowView = isDifferentView || forceShow;
+
+    if (isChangingView) {
+      this.triggerMethod('before:swapOut', this.currentView);
+    }
+
     if (_shouldDestroyView) {
       this.empty();
     }
-
-    // show the view if the view is different or if you want to re-show the view
-    var _shouldShowView = isDifferentView || forceShow;
 
     if (_shouldShowView) {
 
@@ -161,11 +170,10 @@ _.extend(Marionette.Region.prototype, Backbone.Events, {
       }
 
       this.triggerMethod('before:show', view);
+      Marionette.triggerMethodOn(view, 'before:show');
 
-      if (_.isFunction(view.triggerMethod)) {
-        view.triggerMethod('before:show');
-      } else {
-        this.triggerMethod.call(view, 'before:show');
+      if (isChangingView) {
+        this.triggerMethod('swapOut', this.currentView);
       }
 
       this.attachHtml(view);
@@ -176,12 +184,7 @@ _.extend(Marionette.Region.prototype, Backbone.Events, {
       }
 
       this.triggerMethod('show', view);
-
-      if (_.isFunction(view.triggerMethod)) {
-        view.triggerMethod('show');
-      } else {
-        this.triggerMethod.call(view, 'show');
-      }
+      Marionette.triggerMethodOn(view, 'show');
 
       return this;
     }
@@ -196,7 +199,7 @@ _.extend(Marionette.Region.prototype, Backbone.Events, {
     }
 
     if (!this.$el || this.$el.length === 0) {
-      throwError('An "el" ' + this.$el.selector + ' must exist in DOM');
+      throw new Marionette.Error('An "el" ' + this.$el.selector + ' must exist in DOM');
     }
   },
 

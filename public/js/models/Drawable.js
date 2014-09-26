@@ -1,45 +1,21 @@
-
-// creates instances
-var construct = function(constructor, args) {
-  var f = function() {
-    return constructor.apply(this, args);
-  };
-  f.prototype = constructor.prototype;
-  return new f();
-};
-
 zip.workerScriptsPath = '/vendor/zip/WebContent/';
 URL = window.webkitURL || window.mozURL || window.URL;
 
-var Drawable = BaseRealtimeModel.extend({
-  defaults: {
-    texture: '/img/crate.gif',
-    geometryType: 'BoxGeometry',
-    geometryParams: [200, 200, 200],
-    matrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-    dofvalues: []
+var Drawable = m3js.Drawable.extend({
+  
+  defaults: function() {
+    
+    var ret = _.clone(m3js.Drawable.prototype.defaults);
+
+    _.extend(ret, {
+      dofvalues: []
+    })
+    
+    return ret
   },
-
-  _mesh: undefined,
-  _texture: undefined,
-  _material: undefined,
-  _geometry: undefined,
-
+  
   initDrawable: function() {
     var _this = this;
-
-    var _loaded = function() {
-      if (_this.collection !== undefined) {
-        _this.collection.trigger('drawable:loaded', _this);
-      }
-      _this.trigger('drawable:loaded', _this);
-
-      _this.on('change:matrix', function() {
-        // console.log('Drawable: update mesh');
-        _this.updateMesh();
-      });
-      _this.updateMesh();
-    };
 
     var _loadCollada = function(url, scale, loaderFunc) {
       scale = scale || 1.0;
@@ -65,7 +41,16 @@ var Drawable = BaseRealtimeModel.extend({
 
         _this._mesh = dae;
 
-        _loaded();
+        if (_this.collection !== undefined) {
+          _this.collection.trigger('drawable:loaded', _this);
+        }
+        _this.trigger('drawable:loaded', _this);
+
+        _this.on('change:matrix', function() {
+          // console.log('Drawable: update mesh');
+          _this.updateMesh();
+        });
+        _this.updateMesh();
 
         dae.scale.x = dae.scale.y = dae.scale.z = scale;
         dae.updateMatrix();
@@ -73,14 +58,7 @@ var Drawable = BaseRealtimeModel.extend({
     };
 
     if (THREE.hasOwnProperty(this.get('geometryType'))) {
-      this._texture = THREE.ImageUtils.loadTexture(this.get('texture'), new THREE.UVMapping(), _loaded);
-      this._texture.anisotropy = window._renderer.renderer.getMaxAnisotropy();
-      this._geometry = construct(THREE[this.get('geometryType')], this.get('geometryParams'));
-      this._material = new THREE.MeshLambertMaterial({
-        map: this._texture
-      });
-
-      this._mesh = new THREE.Mesh(this._geometry, this._material);
+      m3js.Drawable.prototype.initDrawable.call(this);
     }
     else if (this.get('geometryType') == 'collada') {
       _loadCollada(this.get('geometryParams')[0], this.get('geometryParams')[1]);
@@ -139,19 +117,5 @@ var Drawable = BaseRealtimeModel.extend({
     if (this.kinematics) {
       return this.get('dofvalues')[index];
     }
-  },
-
-  updateMesh: function() {
-    this._mesh.matrix.set.apply(this._mesh.matrix, this.get('matrix'));
-    this._mesh.matrix.decompose(this._mesh.position, this._mesh.quaternion, this._mesh.scale);
-  },
-
-  getMesh: function() {
-    return this._mesh;
-  },
-
-  initialize: function(options) {
-    BaseRealtimeModel.prototype.initialize.apply(this, options);
-    this.initDrawable();
   }
 });
