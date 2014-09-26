@@ -2,18 +2,18 @@ zip.workerScriptsPath = '/vendor/zip/WebContent/';
 URL = window.webkitURL || window.mozURL || window.URL;
 
 var Drawable = m3js.Drawable.extend({
-  
+
   defaults: function() {
-    
+
     var ret = _.clone(m3js.Drawable.prototype.defaults);
 
     _.extend(ret, {
       dofvalues: []
-    })
-    
-    return ret
+    });
+
+    return ret;
   },
-  
+
   initDrawable: function() {
     var _this = this;
 
