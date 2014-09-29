@@ -20,7 +20,7 @@
     "respond": "~1.4.2",
     "collada_robots": "https://github.com/rdiankov/collada_robots.git#98c0760b8c",
     "zip": "https://github.com/gildas-lormeau/zip.js.git#4c93974e90",
-    "threejs-colladaloader": "https://raw.githubusercontent.com/mrdoob/three.js/bc706f381576573e998bd6a3738f6316642a20de/examples/js/loaders/ColladaLoader.js",
+    "threejs-colladaloader": "https://raw.githubusercontent.com/Stonelinks/three.js/3e893840e21b6a22ce9488cb7b229dc6e71f959b/examples/js/loaders/ColladaLoader.js",
     "marionette-threejs": "0.0.2"
   }
 }

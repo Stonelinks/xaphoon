@@ -23,7 +23,7 @@ var Drawable = m3js.Drawable.extend({
       var loader = new THREE.ColladaLoader();
       loader.options.convertUpAxis = true;
       loader.load(url, function(collada) {
-        var dae = collada.scene;
+        var rootColladaObject = collada.rootObject;
 
         if (collada.kinematics) {
           _this.kinematics = collada.kinematics;
@@ -39,7 +39,7 @@ var Drawable = m3js.Drawable.extend({
           }));
         }
 
-        _this._mesh = dae;
+        _this._mesh = rootColladaObject;
 
         if (_this.collection !== undefined) {
           _this.collection.trigger('drawable:loaded', _this);
@@ -52,8 +52,8 @@ var Drawable = m3js.Drawable.extend({
         });
         _this.updateMesh();
 
-        dae.scale.x = dae.scale.y = dae.scale.z = scale;
-        dae.updateMatrix();
+        rootColladaObject.scale.x = rootColladaObject.scale.y = rootColladaObject.scale.z = scale;
+        rootColladaObject.updateMatrix();
       });
     };
 

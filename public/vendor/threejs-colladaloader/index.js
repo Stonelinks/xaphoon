@@ -8,6 +8,7 @@ THREE.ColladaLoader = function () {
 	var COLLADA = null;
 	var scene = null;
 	var visualScene;
+	var rootObject;
 	var kinematicsModel;
 
 	var readyCallbackFunc = null;
@@ -151,12 +152,14 @@ THREE.ColladaLoader = function () {
 
 		visualScene = parseScene();
 		scene = new THREE.Scene();
+		rootObject = new THREE.Object3D();
 
 		for ( var i = 0; i < visualScene.nodes.length; i ++ ) {
 
-			scene.add( createSceneGraph( visualScene.nodes[ i ] ) );
+			rootObject.add( createSceneGraph( visualScene.nodes[ i ] ) );
 
 		}
+    scene.add( rootObject );
 
 		// unit conversion
 		scene.scale.multiplyScalar( colladaUnit );
@@ -173,6 +176,7 @@ THREE.ColladaLoader = function () {
 			skins: skins,
 			animations: animData,
 			kinematics: kinematics,
+			rootObject: rootObject,
 			dae: {
 				images: images,
 				materials: materials,
